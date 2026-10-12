@@ -3,6 +3,7 @@ import { Alert, FlatList, Pressable, SafeAreaView, StyleSheet, Text, TextInput, 
 import { addRule, ConditionField, ConditionOperator, deleteRule, getAllRules, Rule } from './rules';
 import { importExcelCategorization } from './excelImport';
 import { reapplyRulesToUncategorized } from './db';
+import { applyCategoryGroupMap } from './groupMapping';
 
 const FIELD_OPTIONS: { value: ConditionField; label: string }[] = [
   { value: 'counterpartyName', label: 'Counterparty Name' },
@@ -66,6 +67,7 @@ export default function RulesScreen() {
   const [priority, setPriority] = useState('1');
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [groupingByCategory, setGroupingByCategory] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -128,6 +130,24 @@ export default function RulesScreen() {
     }
   }
 
+  async function handleApplyGroupMap() {
+    setGroupingByCategory(true);
+    try {
+      const result = await applyCategoryGroupMap();
+      await refresh();
+      Alert.alert(
+        'Groups applied',
+        `${result.transactionsUpdated} transaction(s), ${result.budgetsUpdated} budget item(s), and ` +
+          `${result.rulesUpdated} rule(s) regrouped (Rent/Water/Shopping → Household, Uber/Fare → Travel, ` +
+          `Washing Machine → Electronics, Masters Fees → Education, Alcohol/Friends → Social).`
+      );
+    } catch (error) {
+      Alert.alert('Grouping failed', error instanceof Error ? error.message : String(error));
+    } finally {
+      setGroupingByCategory(false);
+    }
+  }
+
   function handleDelete(rule: Rule) {
     Alert.alert('Delete rule?', `IF ${fieldLabel(rule.conditionField)} ${operatorLabel(rule.conditionOperator)} "${rule.conditionValue}"`, [
       { text: 'Cancel', style: 'cancel' },
@@ -156,6 +176,12 @@ export default function RulesScreen() {
       <Pressable style={styles.importButton} onPress={handleImportFromExcel} disabled={importing}>
         <Text style={styles.importButtonText}>
           {importing ? 'Importing…' : 'Import categorization from Excel'}
+        </Text>
+      </Pressable>
+
+      <Pressable style={styles.importButton} onPress={handleApplyGroupMap} disabled={groupingByCategory}>
+        <Text style={styles.importButtonText}>
+          {groupingByCategory ? 'Applying…' : 'Apply super-groups (Household, Travel, etc.)'}
         </Text>
       </Pressable>
 
