@@ -97,6 +97,17 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS budgets (
+      id TEXT PRIMARY KEY NOT NULL,
+      label TEXT NOT NULL,
+      category TEXT NOT NULL,
+      "group" TEXT NOT NULL,
+      amount REAL NOT NULL DEFAULT 0,
+      kind TEXT NOT NULL DEFAULT 'FIXED',
+      sort_order INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX IF NOT EXISTS idx_budgets_sort ON budgets(sort_order ASC);
   `);
 
   // Migration for installs that already had a "transactions" table before
@@ -434,4 +445,83 @@ export async function flagPossibleDuplicates(): Promise<number> {
     }
   }
   return flagged;
+}
+
+// ---- Profile: payday + initial budget setup ----
+
+export async function getSetting(key: string): Promise<string | null> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
+  return row?.value ?? null;
+}
+
+export async function setSetting(key: string, value: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO settings (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    key,
+    value
+  );
+}
+
+export type BudgetKind = 'FIXED' | 'LOAN';
+
+export type BudgetRow = {
+  id: string;
+  label: string;
+  category: string;
+  group: string;
+  amount: number;
+  kind: BudgetKind;
+  sort_order: number;
+};
+
+export async function getBudgets(): Promise<BudgetRow[]> {
+  const db = await getDb();
+  return db.getAllAsync<BudgetRow>(`SELECT * FROM budgets ORDER BY sort_order ASC`);
+}
+
+/**
+ * Insert a new budget line item, or update an existing one if `id` is passed.
+ * `category`/`group` default to `label` — most fixed budget items (Rent,
+ * KPLC) don't need a separate grouping concept, matching the same default
+ * pattern used for the quick tap-to-categorize flow in categorizeTransaction.
+ */
+export async function upsertBudget(input: {
+  id?: string;
+  label: string;
+  category?: string;
+  group?: string;
+  amount: number;
+  kind?: BudgetKind;
+  sortOrder?: number;
+}): Promise<string> {
+  const db = await getDb();
+  const id = input.id ?? `budget_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const category = input.category ?? input.label;
+  const group = input.group ?? input.label;
+  const kind = input.kind ?? 'FIXED';
+  const sortOrder = input.sortOrder ?? Date.now();
+
+  await db.runAsync(
+    `INSERT INTO budgets (id, label, category, "group", amount, kind, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       label = excluded.label, category = excluded.category, "group" = excluded."group",
+       amount = excluded.amount, kind = excluded.kind`,
+    id,
+    input.label,
+    category,
+    group,
+    input.amount,
+    kind,
+    sortOrder
+  );
+  return id;
+}
+
+export async function deleteBudget(id: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM budgets WHERE id = ?', id);
 }
