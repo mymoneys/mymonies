@@ -1,0 +1,18 @@
+node_modules/
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Android native project: track hand-written source (app/src), ignore build output.
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/app/.cxx/
+android/local.properties
+
+ios/
+.DS_Store
+*.log
+data/

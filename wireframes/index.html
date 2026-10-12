@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MPESA Tracker Wireframes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout concept: a single phone-frame floating on a dark backdrop, lit from
+     behind by a soft violet glow — glass surfaces throughout, one bold accent. */
+  :root{
+    --bg:#0A0912;
+    --glow-1:#6E56CF;
+    --glow-2:#8B7CFF;
+    --app-bg:#0F0D18;
+    --card-bg:rgba(139,124,255,0.07);
+    --card-border:rgba(139,124,255,0.22);
+    --card-blur:18px;
+    --ink:#F6F4FF;
+    --ink-soft:#AFA9C9;
+    --ink-faint:#716C8C;
+    --accent:#8B7CFF;
+    --accent-ink:#0F0D18;
+    --accent-soft:rgba(139,124,255,0.16);
+    --chip:rgba(255,255,255,0.08);
+    --positive:#4ADE80;
+    --negative:#FB7185;
+    --warn-bg:rgba(251,113,133,0.09);
+    --warn-border:rgba(251,113,133,0.32);
+    --bar-track:rgba(255,255,255,0.12);
+    --shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,124,255,0.1);
+    --glow-shadow: 0 8px 24px rgba(139,124,255,0.35);
+    --ease-out: cubic-bezier(0.23,1,0.32,1);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#F1EEFB;
+      --glow-1:#B9ADFF;
+      --glow-2:#D8CFFF;
+      --app-bg:#FBFAFF;
+      --card-bg:rgba(108,92,215,0.05);
+      --card-border:rgba(108,92,215,0.18);
+      --ink:#171427;
+      --ink-soft:#514C6E;
+      --ink-faint:#8B86A3;
+      --accent:#6C5CD7;
+      --accent-ink:#FFFFFF;
+      --accent-soft:rgba(108,92,215,0.1);
+      --chip:rgba(108,92,215,0.08);
+      --positive:#1F9A54;
+      --negative:#D6425A;
+      --warn-bg:#FDEEEF;
+      --warn-border:#F3C6CC;
+      --bar-track:rgba(23,20,39,0.1);
+      --shadow: 0 30px 70px rgba(23,20,39,0.14), 0 0 0 1px rgba(108,92,215,0.08);
+      --glow-shadow: 0 8px 20px rgba(108,92,215,0.25);
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#F1EEFB;
+    --glow-1:#B9ADFF;
+    --glow-2:#D8CFFF;
+    --app-bg:#FBFAFF;
+    --card-bg:rgba(108,92,215,0.05);
+    --card-border:rgba(108,92,215,0.18);
+    --ink:#171427;
+    --ink-soft:#514C6E;
+    --ink-faint:#8B86A3;
+    --accent:#6C5CD7;
+    --accent-ink:#FFFFFF;
+    --accent-soft:rgba(108,92,215,0.1);
+    --chip:rgba(108,92,215,0.08);
+    --positive:#1F9A54;
+    --negative:#D6425A;
+    --warn-bg:#FDEEEF;
+    --warn-border:#F3C6CC;
+    --bar-track:rgba(23,20,39,0.1);
+    --shadow: 0 30px 70px rgba(23,20,39,0.14), 0 0 0 1px rgba(108,92,215,0.08);
+    --glow-shadow: 0 8px 20px rgba(108,92,215,0.25);
+    color-scheme: light;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    min-height:100%;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Plus Jakarta Sans', system-ui, sans-serif;
+    display:flex;
+    justify-content:center;
+    padding-inline:16px;
+    padding-block: max(32px, env(safe-area-inset-top, 0px)) max(32px, env(safe-area-inset-bottom, 0px));
+    overflow-x:hidden;
+  }
+  .stage{
+    width:100%;
+    max-width:900px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  }
+  .stage-label{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1.6px;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+
+  .phone-wrap{position:relative;display:flex;justify-content:center;width:100%}
+  .glow{position:absolute;border-radius:40%;filter:blur(60px);opacity:0.55;z-index:0;pointer-events:none}
+  .glow-a{width:340px;height:340px;top:-60px;left:50%;transform:translateX(-72%) rotate(18deg);background:radial-gradient(circle at 30% 30%, var(--glow-2), var(--glow-1) 60%, transparent 75%)}
+  .glow-b{width:300px;height:300px;bottom:-40px;left:50%;transform:translateX(32%) rotate(-12deg);background:radial-gradient(circle at 60% 60%, var(--glow-1), transparent 70%)}
+
+  .phone{
+    position:relative;
+    z-index:1;
+    width:390px;
+    max-width:100%;
+    height:844px;
+    max-height:92vh;
+    background:var(--app-bg);
+    border:1px solid var(--card-border);
+    border-radius:32px;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .screen{
+    flex:1;
+    overflow-y:auto;
+    padding:28px 20px 16px 20px;
+  }
+  .screen::-webkit-scrollbar{display:none}
+
+  [hidden]{display:none!important}
+
+  .kicker{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin:0 0 8px 0}
+  h1{font-family:'Sora',sans-serif;font-weight:800;line-height:1.02;letter-spacing:-0.5px;margin:0 0 18px 0;font-size:32px;text-wrap:balance}
+  p{margin:0;line-height:1.5}
+
+  button{font-family:inherit;cursor:pointer;border:none;background:none;padding:0;color:inherit}
+  button:focus-visible, input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .press{transition:transform 160ms var(--ease-out)}
+  .press:active{transform:scale(0.97)}
+  @media (prefers-reduced-motion: reduce){
+    .press{transition:none}
+    .press:active{transform:none}
+  }
+
+  .btn-primary{display:block;width:100%;background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:13px 0;text-align:center;font-weight:700;font-size:14px;box-shadow:var(--glow-shadow)}
+  .btn-secondary{display:block;width:100%;background:var(--chip);color:var(--ink);border-radius:14px;padding:12px 0;text-align:center;font-weight:700;font-size:13px;border:1px solid var(--card-border)}
+  .glass{background:var(--card-bg);border:1px solid var(--card-border);backdrop-filter:blur(var(--card-blur));-webkit-backdrop-filter:blur(var(--card-blur))}
+
+  .month-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:20px}
+  .month-arrow{width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--ink)}
+  .month-label{font-family:'Sora',sans-serif;font-size:16px;font-weight:700;min-width:140px;text-align:center}
+
+  .stat-row{display:flex;gap:10px;margin-bottom:10px}
+  .stat-card{flex:1;border-radius:16px;padding:14px}
+  .stat-label{font-size:11px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+  .stat-value{font-family:'Sora',sans-serif;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+  .net-card{border-radius:16px;padding:16px;margin-bottom:14px}
+  .net-value{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+
+  .chart-card{border-radius:18px;padding:16px;margin-bottom:14px}
+  .chart-title{font-weight:800;font-size:15px;margin-bottom:12px;color:var(--ink)}
+  .pie{width:108px;height:108px;border-radius:50%;flex-shrink:0;
+    background:conic-gradient(var(--accent) 0% 55%, var(--positive) 55% 75%, var(--negative) 75% 85%, #5AC8E8 85% 93%, #E88AE0 93% 100%);
+    box-shadow:0 0 0 6px var(--accent-soft)}
+  .legend{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--ink-soft)}
+  .legend-row{display:flex;align-items:center;gap:7px}
+  .dot{width:9px;height:9px;border-radius:999px;display:inline-block;flex-shrink:0}
+  .bars{display:flex;align-items:flex-end;gap:10px;height:90px}
+  .bar{width:24px;background:var(--bar-track);border-radius:6px 6px 0 0}
+  .bar.is-peak{background:var(--accent);box-shadow:0 0 16px var(--accent)}
+  .bar-labels{display:flex;gap:10px;margin-top:6px}
+  .bar-labels span{width:24px;font-size:10px;text-align:center;color:var(--ink-faint)}
+
+  .sync-card{border-radius:16px;padding:14px;margin-bottom:14px}
+  .sync-card.is-warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+  .sync-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+  .sync-title{font-weight:800;font-size:14px}
+  .sync-pct{font-family:'Sora',sans-serif;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
+  .sync-meta{font-size:12px;color:var(--ink-soft);margin-bottom:2px}
+
+  input[type="text"]{display:block;width:100%;border:1px solid var(--card-border);background:var(--card-bg);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:14px}
+  input[type="text"]::placeholder{color:var(--ink-faint)}
+
+  .filter-row{display:flex;gap:8px;margin:10px 0 12px 0}
+  .chip-btn{flex:1;border:1px solid var(--card-border);border-radius:999px;padding:9px 0;font-weight:700;font-size:13px;text-align:center;background:var(--card-bg);color:var(--ink-soft)}
+  .chip-btn.is-active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+  .quick-actions{display:flex;justify-content:space-around;margin-bottom:16px;padding:10px 4px;border-radius:14px}
+  .quick-action{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:44px;min-height:44px;justify-content:center}
+  .quick-action span{font-size:10px;color:var(--ink-soft);font-weight:600}
+  .quick-action svg{stroke:var(--ink-soft)}
+
+  .tx-list{display:flex;flex-direction:column;gap:10px}
+  .tx-card{display:block;width:100%;text-align:left;border-radius:16px;padding:14px;animation:card-in 320ms var(--ease-out) backwards}
+  .tx-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .tx-amount{font-family:'Sora',sans-serif;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
+  .tx-amount.is-in{color:var(--positive)}
+  .tx-chip{border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700}
+  .tx-chip.is-empty{background:var(--accent-soft);color:var(--accent)}
+  .tx-chip.is-set{background:var(--chip);color:var(--ink-soft)}
+  .tx-mid{display:flex;justify-content:space-between;margin-bottom:6px}
+  .tx-name{font-weight:600;font-size:14px}
+  .tx-dir{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase}
+  .tx-meta{font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+
+  @keyframes card-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes overlay-in{from{opacity:0}to{opacity:1}}
+  @keyframes modal-in{from{opacity:0;transform:translate(-50%,-50%) scale(0.95)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  @keyframes fab-in{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+  @media (prefers-reduced-motion: reduce){
+    .tx-card, .rule-card{animation:none}
+    .overlay, .modal, .fab{animation:none!important}
+  }
+
+  .rules-copy{margin:0 0 16px 0;font-size:13px;line-height:1.5;color:var(--ink-soft)}
+  .rules-list{display:flex;flex-direction:column;gap:10px}
+  .rule-card{border-radius:16px;padding:14px;animation:card-in 320ms var(--ease-out) backwards}
+  .rule-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+  .rule-cond{font-weight:700;font-size:13px;flex:1}
+  .rule-delete{color:var(--negative);font-weight:700;font-size:12px;flex-shrink:0;min-height:44px;display:flex;align-items:center}
+  .rule-target{font-size:13px;color:var(--ink-soft)}
+  .rule-priority{font-size:11px;color:var(--ink-faint);margin-top:5px}
+
+  .fab{position:absolute;right:24px;bottom:40px;width:52px;height:52px;border-radius:26px;background:var(--accent);color:var(--accent-ink);font-size:26px;font-weight:600;display:flex;align-items:center;justify-content:center;box-shadow:var(--glow-shadow), 0 0 32px var(--accent-soft);animation:fab-in 220ms var(--ease-out)}
+
+  .overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);animation:overlay-in 200ms ease-out}
+  .modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:320px;max-width:calc(100% - 40px);max-height:calc(100% - 80px);overflow-y:auto;background:var(--app-bg);border:1px solid var(--card-border);border-radius:20px;padding:20px;animation:modal-in 200ms var(--ease-out);box-shadow:var(--shadow)}
+  .modal h2{font-family:'Sora',sans-serif;font-size:19px;font-weight:800;margin:0 0 4px 0;letter-spacing:-0.3px}
+  .modal .sub{font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:8px}
+  .modal .hint{font-size:12px;color:var(--accent);margin-bottom:14px}
+  .field-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--ink-soft);margin-bottom:6px}
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .pill{border:1px solid var(--card-border);background:var(--card-bg);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--ink)}
+  .pill.is-active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .field-grid{display:flex;gap:10px;margin-bottom:14px}
+  .field-grid > div{flex:1;min-width:0}
+  .modal-actions{display:flex;gap:10px;margin-top:4px}
+  .modal-actions .btn-primary, .modal-actions .btn-cancel{flex:1}
+  .btn-cancel{background:var(--chip);color:var(--ink);border-radius:14px;padding:13px 0;text-align:center;font-weight:700;font-size:14px}
+
+  .tabbar{display:flex;border-top:1px solid var(--card-border);background:var(--app-bg);padding:10px 0 max(20px, env(safe-area-inset-bottom, 0px)) 0;flex-shrink:0}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-faint)}
+  .tab.is-active{color:var(--accent)}
+  .tab svg{stroke:currentColor}
+  .tab span{font-size:11px;font-weight:700}
+
+  .note{max-width:390px;font-size:12px;line-height:1.5;color:var(--ink-faint);text-align:center;position:relative;z-index:1}
+  .note b{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="stage-label">Wireframe — interactive prototype</div>
+
+  <div class="phone-wrap">
+    <div class="glow glow-a" aria-hidden="true"></div>
+    <div class="glow glow-b" aria-hidden="true"></div>
+
+    <div class="phone">
+      <div class="screen">
+
+        <!-- DASHBOARD -->
+        <section id="view-dashboard" hidden>
+          <p class="kicker">Local finance tracker</p>
+          <h1>Dashboard</h1>
+
+          <div class="month-row">
+            <button class="month-arrow press glass" aria-label="Previous month">‹</button>
+            <div class="month-label">October 2026</div>
+            <button class="month-arrow press glass" aria-label="Next month">›</button>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat-card glass">
+              <div class="stat-label">Total In</div>
+              <div class="stat-value" style="color:var(--positive)">Ksh 76,930</div>
+            </div>
+            <div class="stat-card glass">
+              <div class="stat-label">Total Out</div>
+              <div class="stat-value" style="color:var(--negative)">Ksh 65,968</div>
+            </div>
+          </div>
+
+          <div class="net-card glass">
+            <div class="stat-label">Net Savings</div>
+            <div class="net-value" style="color:var(--positive)">+ Ksh 10,962</div>
+          </div>
+
+          <button class="btn-primary press" style="margin-bottom:16px">Export October to CSV</button>
+
+          <div class="chart-card glass">
+            <div class="chart-title">Spending by category</div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <div class="pie" role="img" aria-label="Spending by category, sample data: 55% Uncategorized, 20% Household, 10% Meals, 8% Family, 7% Friends"></div>
+              <div class="legend">
+                <div class="legend-row"><span class="dot" style="background:var(--accent)"></span>55% Uncategorized</div>
+                <div class="legend-row"><span class="dot" style="background:var(--positive)"></span>20% Household</div>
+                <div class="legend-row"><span class="dot" style="background:var(--negative)"></span>10% Meals</div>
+                <div class="legend-row"><span class="dot" style="background:#5AC8E8"></span>8% Family</div>
+                <div class="legend-row"><span class="dot" style="background:#E88AE0"></span>7% Friends</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card glass" style="margin-bottom:0">
+            <div class="chart-title">Daily spending — last 7 days</div>
+            <div class="bars">
+              <div class="bar" style="height:40%"></div>
+              <div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:30%"></div>
+              <div class="bar is-peak" style="height:80%"></div>
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:20%"></div>
+              <div class="bar" style="height:70%"></div>
+            </div>
+            <div class="bar-labels">
+              <span>06</span><span>07</span><span>08</span><span>09</span><span>10</span><span>11</span><span>12</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRANSACTIONS -->
+        <section id="view-transactions">
+          <p class="kicker">Local finance tracker</p>
+          <h1>Transactions</h1>
+
+          <div class="sync-card is-warn">
+            <div class="sync-top">
+              <div class="sync-title">Sync health</div>
+              <div class="sync-pct" style="color:var(--negative)">95%</div>
+            </div>
+            <div class="sync-meta">123 of 129 MPESA messages captured</div>
+            <div class="sync-meta" style="margin-bottom:10px">Last synced 7m ago</div>
+            <button class="btn-primary press">Sync now</button>
+          </div>
+
+          <input id="tx-search" type="text" placeholder="Search by counterparty name" aria-label="Search by counterparty name">
+
+          <div class="filter-row" role="group" aria-label="Filter transactions">
+            <button class="chip-btn press is-active" data-filter="all">All</button>
+            <button class="chip-btn press" data-filter="income">Income</button>
+            <button class="chip-btn press" data-filter="expense">Expenses</button>
+          </div>
+
+          <div class="quick-actions glass">
+            <button class="quick-action press" aria-label="Backfill history">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Backfill</span>
+            </button>
+            <button class="quick-action press" aria-label="Re-apply rules">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M4.5 15a8 8 0 0014.2 3.2M19.5 9A8 8 0 005.3 5.8"/></svg>
+              <span>Re-apply</span>
+            </button>
+            <button class="quick-action press" aria-label="Notification access">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+              <span>Notify</span>
+            </button>
+          </div>
+
+          <div class="tx-list">
+            <button class="tx-card press glass" style="animation-delay:0ms" data-open-categorize data-name="BENDICT MUITHI" data-amount="Ksh 420" data-type="SENT">
+              <div class="tx-top">
+                <span class="tx-amount">− Ksh 420</span>
+                <span class="tx-chip is-empty">Tap to categorize</span>
+              </div>
+              <div class="tx-mid"><span class="tx-name">BENDICT MUITHI</span><span class="tx-dir">Sent</span></div>
+              <div class="tx-meta">13/09/2026, 18:17 · Bal Ksh 451.47</div>
+            </button>
+
+            <div class="tx-card glass" style="animation-delay:60ms">
+              <div class="tx-top">
+                <span class="tx-amount is-in">+ Ksh 500</span>
+                <span class="tx-chip is-set">Savings</span>
+              </div>
+              <div class="tx-mid"><span class="tx-name">M-Shwari Account</span><span class="tx-dir">Received</span></div>
+              <div class="tx-meta">13/09/2026, 18:16 · Bal Ksh 878.47</div>
+            </div>
+
+            <div class="tx-card glass" style="animation-delay:120ms">
+              <div class="tx-top">
+                <span class="tx-amount">− Ksh 750</span>
+                <span class="tx-chip is-set">kplc</span>
+              </div>
+              <div class="tx-mid"><span class="tx-name">KPLC PREPAID</span><span class="tx-dir">Sent</span></div>
+              <div class="tx-meta">01/10/2026, 09:14 · Bal Ksh 1,214.00</div>
+            </div>
+
+            <div class="tx-card glass" style="animation-delay:180ms">
+              <div class="tx-top">
+                <span class="tx-amount">− Ksh 100</span>
+                <span class="tx-chip is-set">Friends</span>
+              </div>
+              <div class="tx-mid"><span class="tx-name">WICKCLIFF ITHALII</span><span class="tx-dir">Sent</span></div>
+              <div class="tx-meta">17/09/2026, 19:41 · Bal Ksh 72.47</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RULES -->
+        <section id="view-rules" hidden style="position:relative;min-height:100%">
+          <p class="kicker">Categorization</p>
+          <h1>Rules</h1>
+          <p class="rules-copy">Rules run in priority order. The first match sets a transaction's category and group.</p>
+
+          <button class="btn-secondary press" style="margin-bottom:16px">Import categorization from Excel</button>
+
+          <div class="rules-list">
+            <div class="rule-card glass" style="animation-delay:0ms">
+              <div class="rule-top">
+                <span class="rule-cond">IF Counterparty Number Equals "0700000000"</span>
+                <button class="rule-delete press" aria-label="Delete rule">Delete</button>
+              </div>
+              <div class="rule-target">THEN Category: "Family" · Group: "Personal"</div>
+              <div class="rule-priority">Priority 1</div>
+            </div>
+
+            <div class="rule-card glass" style="animation-delay:60ms">
+              <div class="rule-top">
+                <span class="rule-cond">IF Counterparty Name Equals "KPLC PREPAID"</span>
+                <button class="rule-delete press" aria-label="Delete rule">Delete</button>
+              </div>
+              <div class="rule-target">THEN Category: "kplc" · Group: "Household"</div>
+              <div class="rule-priority">Priority 1</div>
+            </div>
+
+            <div class="rule-card glass" style="animation-delay:120ms">
+              <div class="rule-top">
+                <span class="rule-cond">IF Counterparty Name Contains "NCBA"</span>
+                <button class="rule-delete press" aria-label="Delete rule">Delete</button>
+              </div>
+              <div class="rule-target">THEN Category: "Work" · Group: "Work"</div>
+              <div class="rule-priority">Priority 2</div>
+            </div>
+          </div>
+
+          <button class="fab press" id="open-add-rule" aria-label="Add rule">+</button>
+        </section>
+
+      </div>
+
+      <nav class="tabbar">
+        <button class="tab press is-active" data-tab="dashboard" aria-label="Dashboard">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="tab press" data-tab="transactions" aria-label="Transactions">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>
+          <span>Transactions</span>
+        </button>
+        <button class="tab press" data-tab="rules" aria-label="Rules">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
+          <span>Rules</span>
+        </button>
+      </nav>
+
+      <!-- CATEGORIZE MODAL -->
+      <div id="categorize-overlay" class="overlay" hidden></div>
+      <div id="categorize-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="categorize-title">
+        <h2 id="categorize-title">Categorize <span id="categorize-name">BENDICT MUITHI</span></h2>
+        <div class="sub"><span id="categorize-amount">Ksh 420</span> · <span id="categorize-type">SENT</span></div>
+        <div class="hint">This will also apply to every future message from this sender.</div>
+        <div class="pill-row">
+          <span class="pill is-active">Friends</span>
+          <span class="pill">Household</span>
+          <span class="pill">Work</span>
+        </div>
+        <input type="text" id="categorize-input" value="Friends" aria-label="Category" style="margin-bottom:16px">
+        <div class="modal-actions">
+          <button class="btn-cancel press" data-close-categorize>Cancel</button>
+          <button class="btn-primary press" data-close-categorize>Save</button>
+        </div>
+      </div>
+
+      <!-- ADD RULE MODAL -->
+      <div id="add-rule-overlay" class="overlay" hidden></div>
+      <div id="add-rule-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="add-rule-title">
+        <h2 id="add-rule-title" style="margin-bottom:14px">Add rule</h2>
+
+        <div class="field-label">If</div>
+        <div class="pill-row">
+          <span class="pill">Counterparty Name</span>
+          <span class="pill is-active">Counterparty Number</span>
+          <span class="pill">Account Number</span>
+        </div>
+
+        <div class="field-label">Operator</div>
+        <div class="pill-row">
+          <span class="pill is-active">Contains</span>
+          <span class="pill">Equals</span>
+        </div>
+
+        <div class="field-label">Value</div>
+        <input type="text" id="rule-value" placeholder="e.g. 0700000000 or KPLC" aria-label="Condition value" style="margin-bottom:14px">
+
+        <div class="field-grid">
+          <div>
+            <div class="field-label">Category</div>
+            <input type="text" id="rule-category" placeholder="Electricity" aria-label="Category">
+          </div>
+          <div>
+            <div class="field-label">Group</div>
+            <input type="text" id="rule-group" placeholder="Household" aria-label="Group">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancel press" data-close-add-rule>Cancel</button>
+          <button class="btn-primary press" data-close-add-rule>Save rule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Tab switches are instant — frequent navigation gets <b>no</b> animation by design. Modals use a 200ms scale+fade entrance; buttons give 160ms press feedback.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var views = { dashboard: 'view-dashboard', transactions: 'view-transactions', rules: 'view-rules' };
+
+  function setTab(name) {
+    Object.keys(views).forEach(function (key) {
+      document.getElementById(views[key]).hidden = key !== name;
+    });
+    document.querySelectorAll('.tab').forEach(function (tab) {
+      tab.classList.toggle('is-active', tab.getAttribute('data-tab') === name);
+    });
+  }
+
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      setTab(tab.getAttribute('data-tab'));
+    });
+  });
+
+  document.querySelectorAll('.chip-btn').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.chip-btn').forEach(function (c) {
+        c.classList.remove('is-active');
+      });
+      chip.classList.add('is-active');
+    });
+  });
+
+  function openModal(overlayId, modalId) {
+    document.getElementById(overlayId).hidden = false;
+    document.getElementById(modalId).hidden = false;
+  }
+  function closeModal(overlayId, modalId) {
+    document.getElementById(overlayId).hidden = true;
+    document.getElementById(modalId).hidden = true;
+  }
+
+  document.querySelectorAll('[data-open-categorize]').forEach(function (card) {
+    card.addEventListener('click', function () {
+      document.getElementById('categorize-name').textContent = card.getAttribute('data-name');
+      document.getElementById('categorize-amount').textContent = card.getAttribute('data-amount');
+      document.getElementById('categorize-type').textContent = card.getAttribute('data-type');
+      openModal('categorize-overlay', 'categorize-modal');
+    });
+  });
+  document.getElementById('categorize-overlay').addEventListener('click', function () {
+    closeModal('categorize-overlay', 'categorize-modal');
+  });
+  document.querySelectorAll('[data-close-categorize]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      closeModal('categorize-overlay', 'categorize-modal');
+    });
+  });
+
+  document.getElementById('open-add-rule').addEventListener('click', function () {
+    openModal('add-rule-overlay', 'add-rule-modal');
+  });
+  document.getElementById('add-rule-overlay').addEventListener('click', function () {
+    closeModal('add-rule-overlay', 'add-rule-modal');
+  });
+  document.querySelectorAll('[data-close-add-rule]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      closeModal('add-rule-overlay', 'add-rule-modal');
+    });
+  });
+
+  document.querySelectorAll('.modal .pill').forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      var siblings = pill.parentElement.querySelectorAll('.pill');
+      siblings.forEach(function (s) { s.classList.remove('is-active'); });
+      pill.classList.add('is-active');
+    });
+  });
+})();
+</script>
+</body>
+</html>
