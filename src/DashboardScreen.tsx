@@ -131,9 +131,20 @@ export default function DashboardScreen() {
     }
   }
 
+  // The group-level view (not drilled into a specific group) is capped to
+  // the top groups + a single "Other" slice — a flat list of every group,
+  // many at 0-1%, made the card feel oversized without adding information.
+  // Drilling into one group still shows every category inside it in full.
+  const TOP_GROUP_COUNT = 6;
   const pieSource: { name: string; total: number }[] = selectedGroup
     ? categories.map((c) => ({ name: c.category, total: c.total }))
-    : groups.map((g) => ({ name: g.group, total: g.total }));
+    : (() => {
+        const sorted = groups.map((g) => ({ name: g.group, total: g.total })).filter((g) => g.total > 0);
+        if (sorted.length <= TOP_GROUP_COUNT) return sorted;
+        const top = sorted.slice(0, TOP_GROUP_COUNT);
+        const other = sorted.slice(TOP_GROUP_COUNT).reduce((sum, g) => sum + g.total, 0);
+        return [...top, { name: 'Other (combined)', total: other }];
+      })();
 
   const pieData = pieSource
     .filter((c) => c.total > 0)
