@@ -15,7 +15,12 @@ import { useSmsPermission } from './hooks/useSmsPermission';
 
 const PAYDAY_KEY = 'payday_day';
 
-const SUGGESTIONS = ['Rent', 'KPLC (Electricity)', 'Water', 'Internet', 'Loan repayment'];
+// These double as both the display label AND the `category` budgets are
+// matched against (upsertBudget defaults category to label) — so each one
+// must exactly match a real transaction category, e.g. "Electricity" (what
+// KPLC gets consolidated into), not a parenthetical display name like
+// "KPLC (Electricity)" that no transaction's category will ever equal.
+const SUGGESTIONS = ['Rent', 'Electricity', 'Water', 'Internet', 'Loan repayment'];
 
 export default function ProfileScreen() {
   const [payday, setPayday] = useState('');
