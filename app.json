@@ -15,7 +15,8 @@
       "package": "com.anonymous.tracker"
     },
     "plugins": [
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-font"
     ]
   }
 }
