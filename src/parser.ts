@@ -39,6 +39,9 @@ function cleanCounterparty(raw: string): string {
   return raw
     .replace(/\s+for account\s+.*$/i, '')
     .replace(/\s+(?:for\s+)?(?:07\d{8}|01\d{8}|\d{2,4}\*{2,4}\d{2,4}|\d{9,12})\s*$/i, '')
+    // Agent withdrawals prefix the name with the till/store number, e.g.
+    // "2104953 - SUPERSHELL Ltd" — the number alone isn't the agent's name.
+    .replace(/^\d{4,10}\s*-\s*/, '')
     .replace(/\.\s*$/, '')
     .trim();
 }
@@ -87,9 +90,18 @@ export function parseMpesaMessage(
   let transactionType: ParsedTransaction['transactionType'] = 'INFO';
   let counterpartyName = '';
 
-  if (/withdrawn/i.test(text)) {
+  if (/withdraw(?:n)?\b/i.test(text)) {
+    // Safaricom uses both "you have withdrawn Ksh X from Y" (ATM) and the
+    // present-tense "Withdraw KshX.00 from Y" (agent/over-the-counter) — the
+    // latter was falling through to INFO entirely when only "withdrawn" was
+    // matched, silently dropping real cash withdrawals.
     transactionType = 'WITHDRAWN';
-    const m = text.match(new RegExp(`withdrawn\\s+(?:Ksh[\\d,]+\\.?\\d*\\s+)?from\\s+(.+?)${DATE_TAIL}`, 'i'));
+    // ATM withdrawals end in "...from <agent> on <date>" (DATE_TAIL); agent/
+    // over-the-counter ones have no second date and instead run straight into
+    // "New M-PESA balance is...", so that's the fallback terminator.
+    const m =
+      text.match(new RegExp(`withdraw(?:n)?\\s+(?:Ksh[\\d,]+\\.?\\d*\\s+)?from\\s+(.+?)${DATE_TAIL}`, 'i')) ??
+      text.match(/withdraw(?:n)?\s+(?:Ksh[\d,]+\.?\d*\s+)?from\s+(.+?)\s+New M-PESA balance/i);
     if (m) counterpartyName = m[1];
   } else if (/bought\s+Ksh[\d,]+\.?\d*\s+of\s+/i.test(text)) {
     transactionType = 'EXPENSE';

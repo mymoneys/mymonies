@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as IntentLauncher from 'expo-intent-launcher';
 import {
   BudgetRow,
   deleteBudget,
@@ -9,6 +10,8 @@ import {
   upsertBudget,
 } from './db';
 import { getCategoryBreakdown } from './analytics';
+import SyncHealthCard from './SyncHealthCard';
+import { useSmsPermission } from './hooks/useSmsPermission';
 
 const PAYDAY_KEY = 'payday_day';
 
@@ -24,6 +27,7 @@ export default function ProfileScreen() {
   const [amount, setAmount] = useState('');
   const [kind, setKind] = useState<'FIXED' | 'LOAN'>('FIXED');
   const [saving, setSaving] = useState(false);
+  const smsPermission = useSmsPermission();
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -100,6 +104,29 @@ export default function ProfileScreen() {
             against each item is pulled from your categorized transactions below.
           </Text>
         </View>
+
+        <SyncHealthCard />
+
+        <Pressable
+          style={styles.linkButton}
+          onPress={() => {
+            IntentLauncher.startActivityAsync(
+              IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
+            ).catch(() => {});
+          }}
+        >
+          <Text style={styles.linkButtonText}>Grant notification access</Text>
+        </Pressable>
+
+        {smsPermission.status !== 'granted' && smsPermission.status !== 'unsupported' && (
+          <Pressable style={styles.linkButton} onPress={() => smsPermission.request()}>
+            <Text style={styles.linkButtonText}>
+              {smsPermission.status === 'blocked'
+                ? 'SMS access blocked — enable it in system settings'
+                : 'Grant SMS access (for history backfill)'}
+            </Text>
+          </Pressable>
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardLabel}>Payday</Text>
@@ -221,6 +248,16 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingBottom: 32,
+  },
+  linkButton: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginBottom: 14,
+  },
+  linkButtonText: {
+    color: '#8A6A3C',
+    fontWeight: '700',
+    fontSize: 13,
   },
   header: {
     paddingTop: 12,

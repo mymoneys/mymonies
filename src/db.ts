@@ -213,8 +213,15 @@ export async function insertParsedTransaction(
  */
 export async function parsePendingTransactions(): Promise<number> {
   const db = await getDb();
+  // Also retries real (non-INFO/FAILED) transactions left with a blank
+  // counterparty — normally that only happens if a parser regex fix lands
+  // mid-reparse (a Fast Refresh race), not from normal operation, but it's
+  // cheap to self-heal here rather than leaving a row stuck forever.
   const rows = await db.getAllAsync<TransactionRow>(
-    'SELECT * FROM transactions WHERE is_parsed = 0 ORDER BY timestamp ASC'
+    `SELECT * FROM transactions
+     WHERE is_parsed = 0
+        OR (transaction_type NOT IN ('INFO', 'FAILED') AND TRIM(counterparty_name) = '')
+     ORDER BY timestamp ASC`
   );
 
   let updated = 0;
@@ -411,6 +418,7 @@ export async function getCapturedTransactionCount(): Promise<number> {
   const row = await db.getFirstAsync<{ c: number }>('SELECT COUNT(*) as c FROM transactions');
   return row?.c ?? 0;
 }
+
 
 /**
  * Reconciliation pass for the cross-source dedup gap: the notification

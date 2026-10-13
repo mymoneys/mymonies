@@ -1,20 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import * as IntentLauncher from 'expo-intent-launcher';
-import {
-  categorizeTransaction,
-  getDistinctCategories,
-  getRecentTransactions,
-  parsePendingTransactions,
-  reapplyRulesToUncategorized,
-  TransactionRow,
-} from './db';
-import { backfillFromSmsInbox } from './backfill';
-import { useSmsPermission } from './hooks/useSmsPermission';
-import SyncHealthCard from './SyncHealthCard';
-
-const AUTO_SYNC_INTERVAL_MS = 60000;
+import { categorizeTransaction, getDistinctCategories, getRecentTransactions, TransactionRow } from './db';
 
 type DirectionFilter = 'ALL' | 'INCOME' | 'EXPENSE';
 
@@ -31,18 +18,17 @@ export default function TransactionsScreen() {
   const [query, setQuery] = useState('');
   const [directionFilter, setDirectionFilter] = useState<DirectionFilter>('ALL');
   const [loading, setLoading] = useState(true);
-  const [backfilling, setBackfilling] = useState(false);
-  const [reapplying, setReapplying] = useState(false);
   const [categorizeTarget, setCategorizeTarget] = useState<TransactionRow | null>(null);
   const [categoryInput, setCategoryInput] = useState('');
   const [knownCategories, setKnownCategories] = useState<string[]>([]);
   const [savingCategory, setSavingCategory] = useState(false);
-  const smsPermission = useSmsPermission();
 
+  // Parsing, rule re-application, and SMS sync all run from App's root now
+  // (useBackgroundMaintenance) so they keep working no matter which tab is
+  // open — this screen just reads whatever that background job has produced.
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      await parsePendingTransactions();
       const [rows, categories] = await Promise.all([getRecentTransactions(), getDistinctCategories()]);
       setTransactions(rows);
       setKnownCategories(categories);
@@ -56,78 +42,6 @@ export default function TransactionsScreen() {
     const interval = setInterval(refresh, 3000);
     return () => clearInterval(interval);
   }, [refresh]);
-
-  // §1/§1b: auto-sync in the background whenever SMS permission is already
-  // granted — not just on an explicit button tap. Runs once immediately and
-  // then on an interval, each time as an incremental (not full) sync, so this
-  // stays cheap. This is what keeps the sync-health card's coverage % current
-  // without the user having to remember to tap "Backfill history".
-  useEffect(() => {
-    if (smsPermission.status !== 'granted') {
-      return;
-    }
-
-    let cancelled = false;
-
-    async function autoSync() {
-      try {
-        await backfillFromSmsInbox(false);
-        if (!cancelled) {
-          await refresh();
-        }
-      } catch {
-        // Best-effort background sync — failures surface via the sync-health
-        // card (last-run status), not an interrupting alert.
-      }
-    }
-
-    autoSync();
-    const interval = setInterval(autoSync, AUTO_SYNC_INTERVAL_MS);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [smsPermission.status, refresh]);
-
-  async function handleBackfill() {
-    let status = smsPermission.status;
-    if (status !== 'granted') {
-      status = await smsPermission.request();
-    }
-
-    if (status !== 'granted') {
-      Alert.alert(
-        'SMS permission needed',
-        'Grant SMS access to import past MPESA messages from your inbox.'
-      );
-      return;
-    }
-
-    setBackfilling(true);
-    try {
-      const result = await backfillFromSmsInbox(true);
-      await refresh();
-      Alert.alert(
-        'Backfill complete',
-        `Scanned ${result.scanned} MPESA messages, added ${result.inserted} new transactions.`
-      );
-    } catch (error) {
-      Alert.alert('Backfill failed', error instanceof Error ? error.message : String(error));
-    } finally {
-      setBackfilling(false);
-    }
-  }
-
-  async function handleReapplyRules() {
-    setReapplying(true);
-    try {
-      const count = await reapplyRulesToUncategorized();
-      await refresh();
-      Alert.alert('Rules re-applied', `${count} transaction(s) re-categorized.`);
-    } finally {
-      setReapplying(false);
-    }
-  }
 
   function openCategorize(item: TransactionRow) {
     setCategorizeTarget(item);
@@ -150,7 +64,13 @@ export default function TransactionsScreen() {
   }
 
   const filtered = useMemo(() => {
-    let list = transactions;
+    // Rows that never became a real transaction (balance checks, failed
+    // messages, or anything still waiting on the background parser) are
+    // noise, not data to review — hide them rather than requiring a manual
+    // cleanup action. The background job in useBackgroundMaintenance keeps
+    // retrying these, so a parser improvement surfaces a row automatically
+    // instead of it staying stuck.
+    let list = transactions.filter((item) => item.is_parsed === 1);
 
     if (directionFilter === 'INCOME') {
       list = list.filter((item) => directionOf(item.transaction_type) === 'IN');
@@ -173,12 +93,9 @@ export default function TransactionsScreen() {
         <Text style={styles.kicker}>Local finance tracker</Text>
         <Text style={styles.title}>MPESA transactions</Text>
         <Text style={styles.subtitle}>
-          Live notifications are captured automatically. Use Backfill to import older messages
-          from your SMS inbox.
+          Captured automatically from notifications and your SMS inbox — nothing to trigger by hand.
         </Text>
       </View>
-
-      <SyncHealthCard />
 
       <View style={styles.controls}>
         <TextInput
@@ -206,54 +123,22 @@ export default function TransactionsScreen() {
           })}
         </View>
 
-        <View style={styles.actions}>
-          <Pressable style={styles.primaryButton} onPress={refresh}>
-            <Text style={styles.primaryButtonText}>{loading ? 'Refreshing…' : 'Refresh'}</Text>
-          </Pressable>
-          <Pressable style={styles.secondaryButton} onPress={handleBackfill} disabled={backfilling}>
-            <Text style={styles.secondaryButtonText}>
-              {backfilling ? 'Importing…' : 'Backfill history'}
-            </Text>
-          </Pressable>
-        </View>
-        <Pressable style={styles.secondaryButton} onPress={handleReapplyRules} disabled={reapplying}>
-          <Text style={styles.secondaryButtonText}>
-            {reapplying ? 'Re-applying…' : 'Re-apply rules'}
-          </Text>
+        <Pressable style={[styles.primaryButton, styles.primaryButtonStandalone]} onPress={refresh}>
+          <Text style={styles.primaryButtonText}>{loading ? 'Refreshing…' : 'Refresh'}</Text>
         </Pressable>
-        <Pressable
-          style={styles.linkButton}
-          onPress={() => {
-            IntentLauncher.startActivityAsync(
-              IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
-            ).catch(() => {});
-          }}
-        >
-          <Text style={styles.linkButtonText}>Grant notification access</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.summaryRow}>
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryValue}>{transactions.length}</Text>
-          <Text style={styles.summaryLabel}>Stored</Text>
-        </View>
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryValue}>{filtered.length}</Text>
-          <Text style={styles.summaryLabel}>Visible</Text>
-        </View>
       </View>
 
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>No transactions yet</Text>
             <Text style={styles.emptyBody}>
-              Grant Notification Access and wait for an MPESA SMS, or tap Backfill history to
-              import past messages.
+              Grant notification access (in Profile) and send or receive M-Pesa — it'll show up
+              here automatically, with history backfilled from SMS in the background.
             </Text>
           </View>
         }
@@ -423,65 +308,29 @@ const styles = StyleSheet.create({
   filterChipTextSelected: {
     color: '#FFFDF9',
   },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
   primaryButton: {
+    // flex:1 here is only meaningful in modalActions (a row, shared 50/50
+    // with Cancel) — the standalone Refresh button below overrides it with
+    // primaryButtonStandalone, or flex:1 on a lone column child collapses
+    // its own content height to 0 (no row sibling to share the axis with).
     flex: 1,
     backgroundColor: '#1E1B18',
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: 'center',
   },
+  primaryButtonStandalone: {
+    flex: 0,
+    alignSelf: 'stretch',
+  },
   primaryButtonText: {
     color: '#FFFDF9',
     fontWeight: '700',
   },
-  secondaryButton: {
-    flex: 1,
-    backgroundColor: '#E7DDCF',
-    borderRadius: 14,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#2F2924',
-    fontWeight: '700',
-  },
-  linkButton: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  linkButtonText: {
-    color: '#8A6A3C',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  summaryCard: {
-    flex: 1,
-    backgroundColor: '#FFFDF9',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E3D8CA',
-  },
-  summaryValue: {
-    color: '#1E1B18',
-    fontSize: 24,
-    fontWeight: '900',
-  },
-  summaryLabel: {
-    color: '#6B5E52',
-    marginTop: 4,
-    fontSize: 13,
-  },
   list: {
+    flex: 1,
+  },
+  listContent: {
     paddingBottom: 24,
     gap: 12,
   },
