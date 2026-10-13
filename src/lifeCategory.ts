@@ -28,13 +28,15 @@ export const LIFE_CATEGORY_GROUPS: Record<string, LifeCategory> = {
   'Paid _Debt-Friends': 'Needs',
   Airtime: 'Needs',
   Family: 'Needs',
-  Tamara: 'Needs',
-  "Shiru - Ma' Francis": 'Needs',
   Work: 'Needs',
   'Church Contribution': 'Needs',
   Business: 'Needs',
   Job: 'Needs',
   'Moving to Nairobi': 'Needs',
+  // Giving: from the built-in classifier (src/builtinClassifier.ts) —
+  // generic church/charity/offering/tithe detection, same tier as the
+  // pre-existing "Church Contribution" group above.
+  Giving: 'Needs',
 
   // Wants — non-essential lifestyle spending.
   Electronics: 'Wants',
@@ -48,6 +50,11 @@ export const LIFE_CATEGORY_GROUPS: Record<string, LifeCategory> = {
   Pleasure: 'Wants',
   Personal: 'Wants',
   Other: 'Wants',
+  // From the built-in classifier: no exact pre-existing equivalent group,
+  // so these are new.
+  Entertainment: 'Wants',
+  'Dining Out': 'Wants',
+  Shopping: 'Wants',
 
   // Savings — money set aside or invested, not spent.
   Savings: 'Savings',

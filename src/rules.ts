@@ -1,5 +1,6 @@
 import { getDb } from './db';
 import { ParsedTransaction } from './parser';
+import { classifyByKeyword } from './builtinClassifier';
 
 export type ConditionField = 'counterpartyName' | 'counterpartyNumber' | 'accountNumber';
 export type ConditionOperator = 'CONTAINS' | 'EQUALS';
@@ -120,6 +121,12 @@ function matchesCondition(transaction: ParsedTransaction, rule: Rule): boolean {
  * first match's category/group. Rules are cached in memory — call
  * invalidateRulesCache() (done automatically by addRule/deleteRule) if rules
  * change out from under a long-lived process.
+ *
+ * If no user rule matches, falls back to the generic built-in keyword
+ * classifier (src/builtinClassifier.ts) before giving up to 'Uncategorized'
+ * — this is what makes categorization work for a brand-new user with no
+ * rules and no Excel import at all. User rules always take priority, so a
+ * manual override still wins over the generic guess.
  */
 export async function applyRules(transaction: ParsedTransaction): Promise<CategorizedTransaction> {
   const rules = await loadRulesSortedByPriority();
@@ -128,6 +135,11 @@ export async function applyRules(transaction: ParsedTransaction): Promise<Catego
     if (matchesCondition(transaction, rule)) {
       return { ...transaction, category: rule.targetCategory, grp: rule.targetGroup };
     }
+  }
+
+  const builtin = classifyByKeyword(transaction);
+  if (builtin) {
+    return { ...transaction, category: builtin.category, grp: builtin.group };
   }
 
   return { ...transaction, category: 'Uncategorized', grp: 'Uncategorized' };

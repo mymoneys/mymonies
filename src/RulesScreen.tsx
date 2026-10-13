@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { addRule, ConditionField, ConditionOperator, deleteRule, getAllRules, Rule } from './rules';
-import { importExcelCategorization } from './excelImport';
-import { reapplyRulesToUncategorized } from './db';
 import { applyCategoryGroupMap, consolidateElectricityCategory, normalizeGroupCasing } from './groupMapping';
 
 const FIELD_OPTIONS: { value: ConditionField; label: string }[] = [
@@ -66,7 +64,6 @@ export default function RulesScreen() {
   const [targetGroup, setTargetGroup] = useState('');
   const [priority, setPriority] = useState('1');
   const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
   const [groupingByCategory, setGroupingByCategory] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -108,25 +105,6 @@ export default function RulesScreen() {
       await refresh();
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleImportFromExcel() {
-    setImporting(true);
-    try {
-      const result = await importExcelCategorization();
-      const sweptCount = await reapplyRulesToUncategorized();
-      await refresh();
-      Alert.alert(
-        'Import complete',
-        `Matched ${result.matched} of ${result.excelRowsConsidered} Excel rows to app transactions.\n` +
-          `${result.rulesCreatedOrUpdated} rule(s) created/updated from them.\n` +
-          `${sweptCount} additional transaction(s) categorized by those rules.`
-      );
-    } catch (error) {
-      Alert.alert('Import failed', error instanceof Error ? error.message : String(error));
-    } finally {
-      setImporting(false);
     }
   }
 
@@ -180,16 +158,11 @@ export default function RulesScreen() {
         <Text style={styles.kicker}>Categorization</Text>
         <Text style={styles.title}>Rules</Text>
         <Text style={styles.subtitle}>
-          Rules run in priority order (lowest first). The first match sets the transaction's
-          category and group.
+          New transactions are categorized automatically (built in, no setup needed). Rules you
+          add here take priority over that — they run in order (lowest first), and the first
+          match wins.
         </Text>
       </View>
-
-      <Pressable style={styles.importButton} onPress={handleImportFromExcel} disabled={importing}>
-        <Text style={styles.importButtonText}>
-          {importing ? 'Importing…' : 'Import categorization from Excel'}
-        </Text>
-      </Pressable>
 
       <Pressable style={styles.importButton} onPress={handleApplyGroupMap} disabled={groupingByCategory}>
         <Text style={styles.importButtonText}>
@@ -259,8 +232,11 @@ export default function RulesScreen() {
         onRefresh={refresh}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No rules yet</Text>
-            <Text style={styles.emptyBody}>Add one above to start auto-categorizing transactions.</Text>
+            <Text style={styles.emptyTitle}>No custom rules yet</Text>
+            <Text style={styles.emptyBody}>
+              Transactions are still categorized automatically — add a rule here only when you
+              want to override the built-in guess for a specific sender.
+            </Text>
           </View>
         }
         renderItem={({ item }) => (
