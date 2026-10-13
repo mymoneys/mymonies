@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { backfillFromSmsInbox } from './backfill';
+import { runContributionMaintenance } from './contributions';
 import { parsePendingTransactions, reapplyRulesToUncategorized } from './db';
 import { useSmsPermission } from './hooks/useSmsPermission';
 
@@ -42,6 +43,8 @@ export function useBackgroundMaintenance() {
       try {
         await parsePendingTransactions();
         await reapplyRulesToUncategorized();
+        // After parsing, so it only picks up messages the parser truly couldn't handle.
+        await runContributionMaintenance();
       } catch {
         // Best-effort background upkeep — no user-facing alert for this.
       }

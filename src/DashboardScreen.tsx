@@ -13,6 +13,7 @@ import {
 } from './analytics';
 import { exportTransactionsToCsv, shareCsvExport } from './export';
 import TrendChart from './TrendChart';
+import { ContributeBanner } from './ContributeCard';
 import { getLifeCategoryBreakdown, LifeCategoryTotal } from './lifeCategory';
 
 const MONTH_NAMES = [
@@ -164,6 +165,8 @@ export default function DashboardScreen() {
           <Text style={styles.kicker}>MyMonies</Text>
           <Text style={styles.title}>Dashboard</Text>
         </View>
+
+        <ContributeBanner />
 
         <View style={styles.monthPicker}>
           <Pressable style={styles.monthArrow} onPress={goToPreviousMonth}>

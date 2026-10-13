@@ -11,6 +11,7 @@ import {
 } from './db';
 import { getCategoryBreakdown } from './analytics';
 import SyncHealthCard from './SyncHealthCard';
+import ContributeCard from './ContributeCard';
 import { useSmsPermission } from './hooks/useSmsPermission';
 
 const PAYDAY_KEY = 'payday_day';
@@ -233,6 +234,8 @@ export default function ProfileScreen() {
             </View>
           );
         })}
+
+        <ContributeCard />
 
         <View style={styles.futureNote}>
           <Text style={styles.futureNoteText}>

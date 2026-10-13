@@ -1,4 +1,3 @@
-import { NativeModules } from 'react-native';
 import {
   flagPossibleDuplicates,
   getCapturedTransactionCount,
@@ -8,14 +7,8 @@ import {
   recordSyncRunStart,
   updateSyncRunProgress,
 } from './db';
-
-type RawSms = {
-  address: string;
-  body: string;
-  date: number;
-};
-
-const { SmsReaderModule } = NativeModules;
+import { getContributeSenders, insertContribution, isContributeEnabled, normalizeSender } from './contributions';
+import { getInboxMessageCount, isSmsReaderAvailable, readInboxMessages } from './smsInbox';
 
 export type BackfillResult = {
   scanned: number;
@@ -36,7 +29,7 @@ const PROGRESS_CHECKPOINT_EVERY = 50;
  * sync-health card's "Sync now" action.
  */
 export async function backfillFromSmsInbox(full = false): Promise<BackfillResult> {
-  if (!SmsReaderModule?.getInboxMessages) {
+  if (!isSmsReaderAvailable()) {
     throw new Error(
       'SmsReaderModule is not available. Rebuild the native app after adding it ' +
         '(npx expo prebuild && npx expo run:android).'
@@ -46,14 +39,28 @@ export async function backfillFromSmsInbox(full = false): Promise<BackfillResult
   const lastMax = full ? 0 : await getMaxIngestedTimestamp();
   const sinceMs = full ? 0 : Math.max(0, lastMax - OVERLAP_MS);
 
+  // Extra senders (banks, loan apps) only matter for opt-in contributions —
+  // they're routed to that table below, never into transactions.
+  const extraSenders = (await isContributeEnabled()) ? await getContributeSenders() : [];
+
   const runId = await recordSyncRunStart(full ? 'BACKFILL' : 'INCREMENTAL');
   let scanned = 0;
   let inserted = 0;
 
   try {
-    const messages: RawSms[] = await SmsReaderModule.getInboxMessages(sinceMs);
+    const messages = await readInboxMessages(sinceMs, ['MPESA', ...extraSenders]);
 
     for (const message of messages) {
+      const sender = normalizeSender(message.address);
+      if (sender !== 'MPESA') {
+        try {
+          await insertContribution(sender, message.body, message.date, 'extra_sender');
+        } catch {
+          // Same as below — one bad row shouldn't abort the sync.
+        }
+        continue;
+      }
+
       scanned += 1;
       try {
         const wasInserted = await insertParsedTransaction(message.body, message.date);
@@ -94,11 +101,11 @@ export type SyncCoverage = {
 
 /** Backs the §1b sync-health "rule box". Returns null if the native module isn't available. */
 export async function getSyncCoverage(): Promise<SyncCoverage | null> {
-  if (!SmsReaderModule?.getInboxMessageCount) {
+  const totalInInbox = await getInboxMessageCount();
+  if (totalInInbox == null) {
     return null;
   }
 
-  const totalInInbox: number = await SmsReaderModule.getInboxMessageCount();
   const captured = await getCapturedTransactionCount();
   const coverage = totalInInbox > 0 ? Math.min(1, captured / totalInInbox) : 1;
 

@@ -3,6 +3,7 @@ package com.anonymous.tracker
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import java.io.File
+import org.json.JSONArray
 
 /**
  * Writes directly into the same SQLite file that the JS side manages via expo-sqlite
@@ -47,6 +48,21 @@ object TransactionDb {
       );
       """.trimIndent()
     )
+    // Mirrors the contributions table in src/db.ts (opt-in parser samples).
+    db.execSQL(
+      """
+      CREATE TABLE IF NOT EXISTS contributions (
+        id TEXT PRIMARY KEY NOT NULL,
+        sender TEXT NOT NULL,
+        raw_text TEXT NOT NULL,
+        redacted_text TEXT,
+        signature TEXT,
+        timestamp INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending'
+      );
+      """.trimIndent()
+    )
     return db
   }
 
@@ -70,6 +86,46 @@ object TransactionDb {
            VALUES (?, ?, ?, 'Uncategorized', 'Uncategorized', 0)""",
         arrayOf(id, rawText, timestamp)
       )
+    } finally {
+      db.close()
+    }
+  }
+
+  /** Raw only — redaction happens in JS (src/contributions.ts) on the next app run. */
+  fun insertContribution(context: Context, sender: String, rawText: String, timestamp: Long) {
+    val id = fnv1a("$rawText:$timestamp")
+    val db = open(context)
+    try {
+      db.execSQL(
+        """INSERT OR IGNORE INTO contributions (id, sender, raw_text, timestamp, reason, status)
+           VALUES (?, ?, ?, ?, 'extra_sender', 'pending')""",
+        arrayOf(id, sender, rawText, timestamp)
+      )
+    } finally {
+      db.close()
+    }
+  }
+
+  /**
+   * Extra sender IDs the user opted to contribute samples from, uppercased.
+   * Empty unless contributing is switched on. Keys/format must match
+   * src/contributions.ts (ENABLED_KEY, SENDERS_KEY).
+   */
+  fun readContributeSenders(context: Context): Set<String> {
+    val db = open(context)
+    try {
+      fun setting(key: String): String? =
+        db.rawQuery("SELECT value FROM settings WHERE key = ?", arrayOf(key)).use { c ->
+          if (c.moveToFirst()) c.getString(0) else null
+        }
+
+      if (setting("contribute_enabled") != "1") return emptySet()
+      val json = setting("contribute_senders") ?: return emptySet()
+      val array = JSONArray(json)
+      return (0 until array.length()).map { array.getString(it).trim().uppercase() }.toSet()
+    } catch (error: Exception) {
+      // settings table not created yet (JS side never ran) or malformed JSON.
+      return emptySet()
     } finally {
       db.close()
     }

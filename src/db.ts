@@ -108,6 +108,21 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
       sort_order INTEGER NOT NULL DEFAULT 0
     );
     CREATE INDEX IF NOT EXISTS idx_budgets_sort ON budgets(sort_order ASC);
+
+    -- Opt-in parser samples (see src/contributions.ts). Kept out of
+    -- "transactions" on purpose: bank/loan-app SMS have no parser yet, and
+    -- running them through the M-Pesa one would pollute the dashboard.
+    CREATE TABLE IF NOT EXISTS contributions (
+      id TEXT PRIMARY KEY NOT NULL,
+      sender TEXT NOT NULL,
+      raw_text TEXT NOT NULL,
+      redacted_text TEXT,
+      signature TEXT,
+      timestamp INTEGER NOT NULL,
+      reason TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending'
+    );
+    CREATE INDEX IF NOT EXISTS idx_contributions_status ON contributions(status);
   `);
 
   // Migration for installs that already had a "transactions" table before
