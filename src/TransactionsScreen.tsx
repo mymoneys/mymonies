@@ -86,6 +86,20 @@ export default function TransactionsScreen() {
     return list;
   }, [transactions, query, directionFilter]);
 
+  // Capped so the categorize modal shows a short filtered list instead of
+  // every known category at once — narrows as you type instead of dumping
+  // dozens of chips on screen.
+  const matchingCategories = useMemo(() => {
+    const needle = categoryInput.trim().toLowerCase();
+    if (knownCategories.some((c) => c.toLowerCase() === needle)) {
+      return []; // exact match already picked — nothing left to disambiguate
+    }
+    const matches = needle
+      ? knownCategories.filter((c) => c.toLowerCase().includes(needle))
+      : knownCategories;
+    return matches.slice(0, 6);
+  }, [knownCategories, categoryInput]);
+
   return (
     <SafeAreaView style={styles.screen}>
       <StatusBar style="dark" />
@@ -190,35 +204,31 @@ export default function TransactionsScreen() {
               This will also apply to every future message from this sender.
             </Text>
 
-            {knownCategories.length > 0 && (
-              <View style={styles.chipRow}>
-                {knownCategories.map((category) => (
-                  <Pressable
-                    key={category}
-                    style={[styles.pickerPill, categoryInput === category && styles.pickerPillSelected]}
-                    onPress={() => setCategoryInput(category)}
-                  >
-                    <Text
-                      style={[
-                        styles.pickerPillText,
-                        categoryInput === category && styles.pickerPillTextSelected,
-                      ]}
-                    >
-                      {category}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-
             <TextInput
               value={categoryInput}
               onChangeText={setCategoryInput}
-              placeholder="e.g. Electricity, Family, Groceries"
+              placeholder="Search or type a category"
               placeholderTextColor="#8C7F73"
               style={styles.input}
               autoFocus
             />
+
+            {matchingCategories.length > 0 && (
+              <View style={styles.suggestionList}>
+                {matchingCategories.map((category, index) => (
+                  <Pressable
+                    key={category}
+                    style={[
+                      styles.suggestionRow,
+                      index === matchingCategories.length - 1 && styles.suggestionRowLast,
+                    ]}
+                    onPress={() => setCategoryInput(category)}
+                  >
+                    <Text style={styles.suggestionText}>{category}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
 
             <View style={styles.modalActions}>
               <Pressable style={styles.modalCancelButton} onPress={() => setCategorizeTarget(null)}>
@@ -421,31 +431,28 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 14,
   },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  pickerPill: {
+  suggestionList: {
     borderWidth: 1,
     borderColor: '#D8CCBC',
     backgroundColor: '#FFFFFF',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 12,
+    marginTop: -6,
+    marginBottom: 12,
+    overflow: 'hidden',
   },
-  pickerPillSelected: {
-    backgroundColor: '#1E1B18',
-    borderColor: '#1E1B18',
+  suggestionRow: {
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0E9DC',
   },
-  pickerPillText: {
-    color: '#4E463E',
-    fontSize: 13,
+  suggestionRowLast: {
+    borderBottomWidth: 0,
+  },
+  suggestionText: {
+    color: '#1E1B18',
+    fontSize: 14,
     fontWeight: '600',
-  },
-  pickerPillTextSelected: {
-    color: '#FFFDF9',
   },
   modalActions: {
     flexDirection: 'row',
