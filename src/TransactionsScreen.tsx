@@ -90,7 +90,7 @@ export default function TransactionsScreen() {
     <SafeAreaView style={styles.screen}>
       <StatusBar style="dark" />
       <View style={styles.header}>
-        <Text style={styles.kicker}>Local finance tracker</Text>
+        <Text style={styles.kicker}>MyMonies</Text>
         <Text style={styles.title}>MPESA transactions</Text>
         <Text style={styles.subtitle}>
           Captured automatically from notifications and your SMS inbox — nothing to trigger by hand.

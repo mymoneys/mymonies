@@ -161,7 +161,7 @@ export default function DashboardScreen() {
       <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.kicker}>Local finance tracker</Text>
+          <Text style={styles.kicker}>MyMonies</Text>
           <Text style={styles.title}>Dashboard</Text>
         </View>
 

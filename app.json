@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Tracker",
-    "slug": "tracker",
+    "name": "MyMonies",
+    "slug": "mymonies",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "scheme": "tracker",
+    "scheme": "mymonies",
     "platforms": [
       "ios",
       "android",
