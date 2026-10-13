@@ -3,7 +3,7 @@ import { Alert, FlatList, Pressable, SafeAreaView, StyleSheet, Text, TextInput, 
 import { addRule, ConditionField, ConditionOperator, deleteRule, getAllRules, Rule } from './rules';
 import { importExcelCategorization } from './excelImport';
 import { reapplyRulesToUncategorized } from './db';
-import { applyCategoryGroupMap } from './groupMapping';
+import { applyCategoryGroupMap, consolidateElectricityCategory, normalizeGroupCasing } from './groupMapping';
 
 const FIELD_OPTIONS: { value: ConditionField; label: string }[] = [
   { value: 'counterpartyName', label: 'Counterparty Name' },
@@ -134,12 +134,24 @@ export default function RulesScreen() {
     setGroupingByCategory(true);
     try {
       const result = await applyCategoryGroupMap();
+      const electricity = await consolidateElectricityCategory();
+      const casing = await normalizeGroupCasing();
       await refresh();
+
+      const totalTx = result.transactionsUpdated + electricity.transactionsUpdated + casing.transactionsUpdated;
+      const totalBudgets = result.budgetsUpdated + electricity.budgetsUpdated + casing.budgetsUpdated;
+      const totalRules = result.rulesUpdated + electricity.rulesUpdated + casing.rulesUpdated;
+      const casingNote =
+        casing.merged.length > 0
+          ? ` Merged case-duplicate groups: ${casing.merged.map((m) => `"${m.from}"→"${m.into}"`).join(', ')}.`
+          : '';
+
       Alert.alert(
         'Groups applied',
-        `${result.transactionsUpdated} transaction(s), ${result.budgetsUpdated} budget item(s), and ` +
-          `${result.rulesUpdated} rule(s) regrouped (Rent/Water/Shopping → Household, Uber/Fare → Travel, ` +
-          `Washing Machine → Electronics, Masters Fees → Education, Alcohol/Friends → Social).`
+        `${totalTx} transaction(s), ${totalBudgets} budget item(s), and ${totalRules} rule(s) regrouped ` +
+          `into Household, Travel, Electronics, Education, Social, Foodstuff, and Snacks/Drinks ` +
+          `(KPLC folded into Electricity/Household${electricity.ruleAdded ? ', Kenya Power rule added' : ''}).` +
+          casingNote
       );
     } catch (error) {
       Alert.alert('Grouping failed', error instanceof Error ? error.message : String(error));
