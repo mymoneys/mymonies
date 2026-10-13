@@ -13,6 +13,7 @@ import {
 } from './analytics';
 import { exportTransactionsToCsv, shareCsvExport } from './export';
 import TrendChart from './TrendChart';
+import { getLifeCategoryBreakdown, LifeCategoryTotal } from './lifeCategory';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -23,6 +24,13 @@ const CATEGORY_COLORS = [
   '#8A6A3C', '#2E6B3E', '#A3453C', '#3C5A8A',
   '#8A3C6E', '#6E8A3C', '#3C8A83', '#8A5C3C',
 ];
+
+const LIFE_CATEGORY_COLORS: Record<string, string> = {
+  Needs: '#3C5A8A',
+  Wants: '#8A6A3C',
+  Savings: '#2E6B3E',
+  Unclassified: '#9C9388',
+};
 
 const CHART_CONFIG = {
   backgroundGradientFrom: '#FFFDF9',
@@ -48,18 +56,21 @@ export default function DashboardScreen() {
   const [groups, setGroups] = useState<GroupTotal[]>([]);
   const [categories, setCategories] = useState<CategoryTotal[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [lifeCategories, setLifeCategories] = useState<LifeCategoryTotal[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const [summaryResult, groupResult] = await Promise.all([
+      const [summaryResult, groupResult, lifeCategoryResult] = await Promise.all([
         getMonthlySummary(month, year),
         getGroupBreakdown(month, year),
+        getLifeCategoryBreakdown(month, year),
       ]);
       setSummary(summaryResult);
       setGroups(groupResult);
+      setLifeCategories(lifeCategoryResult);
     } finally {
       setLoading(false);
     }
@@ -234,6 +245,39 @@ export default function DashboardScreen() {
                 })}
               </View>
             </>
+          ) : (
+            <Text style={styles.emptyChartText}>No categorized spending this month yet.</Text>
+          )}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Needs vs Wants vs Savings</Text>
+          {lifeCategories.length > 0 ? (
+            <View style={styles.lifeCategoryList}>
+              {lifeCategories.map((item) => {
+                const total = lifeCategories.reduce((sum, c) => sum + c.total, 0);
+                const pct = total > 0 ? (item.total / total) * 100 : 0;
+                const color = LIFE_CATEGORY_COLORS[item.lifeCategory];
+                return (
+                  <View key={item.lifeCategory} style={styles.lifeCategoryRow}>
+                    <View style={styles.lifeCategoryHeaderRow}>
+                      <Text style={styles.lifeCategoryLabel}>{item.lifeCategory}</Text>
+                      <Text style={styles.lifeCategoryValue}>
+                        {pct.toFixed(0)}% · Ksh {item.total.toLocaleString()}
+                      </Text>
+                    </View>
+                    <View style={styles.lifeCategoryTrack}>
+                      <View
+                        style={[
+                          styles.lifeCategoryFill,
+                          { width: `${Math.max(2, pct)}%`, backgroundColor: color },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
           ) : (
             <Text style={styles.emptyChartText}>No categorized spending this month yet.</Text>
           )}
@@ -420,6 +464,38 @@ const styles = StyleSheet.create({
   },
   trendCard: {
     alignItems: 'stretch',
+  },
+  lifeCategoryList: {
+    alignSelf: 'stretch',
+    gap: 14,
+  },
+  lifeCategoryRow: {
+    gap: 6,
+  },
+  lifeCategoryHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  lifeCategoryLabel: {
+    color: '#1E1B18',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  lifeCategoryValue: {
+    color: '#6B5E52',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  lifeCategoryTrack: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#F0E9DC',
+    overflow: 'hidden',
+  },
+  lifeCategoryFill: {
+    height: 10,
+    borderRadius: 5,
   },
   emptyChartText: {
     color: '#6B5E52',
