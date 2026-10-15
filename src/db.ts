@@ -30,7 +30,7 @@ export type SyncRunRow = {
   error_message: string | null;
 };
 
-// Must stay in sync with android/app/src/main/java/com/anonymous/tracker/TransactionDb.kt
+// Must stay in sync with android/app/src/main/java/com/mymonies/app/TransactionDb.kt
 // (same file name, same schema, same id-hashing algorithm).
 const DB_NAME = 'mpesa.db';
 

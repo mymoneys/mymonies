@@ -12,7 +12,13 @@
       "web"
     ],
     "android": {
-      "package": "com.anonymous.tracker"
+      "package": "com.mymonies.app",
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECEIVE_SMS",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
     },
     "plugins": [
       "expo-sqlite",

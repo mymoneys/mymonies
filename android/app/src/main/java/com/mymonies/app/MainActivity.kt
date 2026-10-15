@@ -1,4 +1,4 @@
-package com.anonymous.tracker
+package com.mymonies.app
 
 import android.os.Build
 import android.os.Bundle

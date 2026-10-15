@@ -1,4 +1,4 @@
-package com.anonymous.tracker
+package com.mymonies.app
 
 import android.app.Notification
 import android.provider.Telephony

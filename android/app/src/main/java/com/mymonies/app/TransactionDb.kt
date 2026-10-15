@@ -1,4 +1,4 @@
-package com.anonymous.tracker
+package com.mymonies.app
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

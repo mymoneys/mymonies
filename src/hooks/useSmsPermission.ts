@@ -31,14 +31,9 @@ export function useSmsPermission() {
       return 'unsupported';
     }
 
-    // RECEIVE_SMS is requested alongside READ_SMS so it's available for a future
-    // real-time SmsReceiver; this phase only wires up READ_SMS for backfill.
-    const results = await PermissionsAndroid.requestMultiple([
-      PermissionsAndroid.PERMISSIONS.READ_SMS,
-      PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-    ]);
-
-    const readResult = results[PermissionsAndroid.PERMISSIONS.READ_SMS];
+    // Only READ_SMS: new messages arrive via the notification listener, and
+    // asking for SMS permissions we don't use gets the app flagged by Play Protect.
+    const readResult = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_SMS);
     let next: SmsPermissionStatus;
     if (readResult === PermissionsAndroid.RESULTS.GRANTED) {
       next = 'granted';
