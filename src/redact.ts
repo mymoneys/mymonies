@@ -45,7 +45,9 @@ function shiftDate(day: string, sep: string, month: string, year: string, offset
     return `${day}${sep}${month}${sep}${year}`;
   }
   d.setUTCDate(d.getUTCDate() + offsetDays);
-  const pad = (n: number, like: string) => (like.length === 2 && like.startsWith('0') ? String(n).padStart(2, '0') : String(n));
+  // Keep each field's width: M-Pesa always writes a two-digit month, so
+  // "13/10/26" must not come back as "17/9/26".
+  const pad = (n: number, like: string) => (like.length === 2 ? String(n).padStart(2, '0') : String(n));
   const outYear = year.length === 2 ? String(d.getUTCFullYear() % 100).padStart(2, '0') : String(d.getUTCFullYear());
   return `${pad(d.getUTCDate(), day)}${sep}${pad(d.getUTCMonth() + 1, month)}${sep}${outYear}`;
 }
@@ -80,6 +82,13 @@ export function redactMessage(text: string, rng: Rng = Math.random): string {
     .replace(/(?:\+?254|\b0)[17]\d{8}\b/g, () => park('07XXXXXXXX'))
     // Masked phones/cards/accounts: 0712***678, 1234****5678, ****1234, XXXX4521.
     .replace(/\b\d{0,6}\*{2,8}\d{0,6}\b|(?:\*{2,}|\b[Xx]{2,})\d{2,6}\b/g, maskDigits)
+    // Agent/till number + name: "from 123456 - Kamau Agencies Ruaka New M-PESA…".
+    // The name usually ends in the agent's location, so it goes whatever its
+    // casing; it runs up to the next fixed M-Pesa phrase or the end.
+    .replace(
+      /\b(from|to|at)\s+(\d{4,})\s+-\s+(.{1,80}?)(?=\.?\s+(?:New\s+M-?PESA|on\s+\d)|\.?\s*$)/gi,
+      (_m, prep: string, num: string) => `${prep} ${maskDigits(num)} - ${park('PERSON')}`
+    )
     // Transaction/reference codes: mixed letters+digits, 8–14 chars (SJK1ABC2DE, FT24286ABCD).
     .replace(/\b(?=[A-Z0-9]*\d)(?=[A-Z0-9]*[A-Z])[A-Z0-9]{8,14}\b/g, () => park('TXNCODE'))
     // Account / ID / till numbers: any remaining run of 5+ digits.
