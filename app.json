@@ -18,6 +18,7 @@
       "expo-sqlite",
       "expo-font",
       "expo-mail-composer"
-    ]
+    ],
+    "icon": "./assets/logo-anime.png"
   }
 }
