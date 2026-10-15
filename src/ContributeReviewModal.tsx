@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ContributionRow,
   dismissContribution,
@@ -21,6 +22,9 @@ type Props = {
  * the only one who can spot a name it missed.
  */
 export default function ContributeReviewModal({ visible, onClose }: Props) {
+  // RN's SafeAreaView is iOS-only; on Android the full-screen modal would
+  // otherwise put the send buttons under the system navigation bar.
+  const insets = useSafeAreaInsets();
   const [rows, setRows] = useState<ContributionRow[]>([]);
   const [sending, setSending] = useState(false);
 
@@ -56,7 +60,7 @@ export default function ContributeReviewModal({ visible, onClose }: Props) {
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.screen}>
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>Review before sending</Text>
@@ -99,7 +103,7 @@ export default function ContributeReviewModal({ visible, onClose }: Props) {
         />
 
         {rows.length > 0 && (
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: 24 + insets.bottom }]}>
             <Text style={styles.footerHint}>Send {rows.length} message{rows.length === 1 ? '' : 's'} via</Text>
             <View style={styles.buttonRow}>
               <Pressable style={styles.sendButton} disabled={sending} onPress={() => handleSend(sendByEmail)}>
@@ -118,7 +122,7 @@ export default function ContributeReviewModal({ visible, onClose }: Props) {
             </View>
           </View>
         )}
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -207,7 +211,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDF9',
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 16,
   },
   footerHint: {
     color: '#6B5E52',
