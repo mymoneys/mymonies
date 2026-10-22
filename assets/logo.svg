@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect width="1024" height="1024" fill="#EDEDED"/>
+  <g transform="translate(512 560) scale(1.18) translate(-500 -520)">
+    <g fill="#141414">
+      <!-- hair: rounded slab, spikes swept back -->
+      <path d="M372 320 C362 290 362 262 374 240 Q340 226 312 228 Q356 196 398 194 Q372 162 352 148
+               Q410 146 450 164 Q458 130 478 106 Q508 136 526 162 Q556 138 600 128 Q590 160 592 186
+               C640 196 674 234 670 272 C666 304 618 302 560 298
+               C500 294 450 302 420 332 L404 392 C384 380 376 352 372 320 Z"/>
+      <!-- ear -->
+      <ellipse cx="420" cy="384" rx="17" ry="27" transform="rotate(-12 420 384)"/>
+      <!-- smirking eye -->
+      <path d="M548 354 L624 340 L620 358 L556 368 Z"/>
+      <!-- jaw shadow into neck -->
+      <path d="M628 400 L614 474 C602 492 586 498 566 496 L528 566 L466 590 L512 474 Z"/>
+      <!-- cash stack held to the ear -->
+      <rect x="306" y="350" width="96" height="150" rx="8" transform="rotate(-20 354 425)"/>
+      <!-- arm + body -->
+      <path d="M300 520 C292 470 318 446 352 450 C384 456 396 482 390 512 L376 600
+               L466 590 L540 610 L620 640 C700 668 740 760 744 1024 L250 1024
+               C240 860 256 720 300 640 Z"/>
+    </g>
+    <g fill="#EDEDED">
+      <!-- bill edges along the stack -->
+      <g transform="rotate(-20 354 425)">
+        <rect x="320" y="364" width="6" height="96" rx="3"/>
+        <rect x="336" y="364" width="6" height="96" rx="3"/>
+        <rect x="352" y="364" width="6" height="96" rx="3"/>
+      </g>
+      <!-- arm separation -->
+      <path d="M396 560 L404 690 L388 692 L382 566 Z"/>
+      <!-- collar -->
+      <path d="M466 590 L520 640 L540 612 Z"/>
+    </g>
+  </g>
+</svg>
