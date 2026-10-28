@@ -16,3 +16,17 @@ ios/
 .DS_Store
 *.log
 data/
+
+# Local secrets and config — never commit; .env.example documents the keys.
+.env
+.env.*
+!.env.example
+
+# Release signing keys live outside the repo (see README); guard against copies.
+*.jks
+android/keystore.properties
+
+# Generated WDK worklet bundle and bare-link output (ai-yako-hackathon branch).
+.wdk/
+.wdk-bundle/
+android-addons/
