@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyMonies Akiba — Modern Warm Fintech UI Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #FAF8F4;
+      --card-bg: #FFFFFF;
+      --border-subtle: #EAE3D6;
+      --border-card: #E3D9C9;
+      --ink-primary: #1C1917;
+      --ink-secondary: #574E45;
+      --ink-muted: #8E8478;
+      
+      --gold-primary: #96601D;
+      --gold-bg: #FBF2E6;
+      --gold-border: #EED9BF;
+      
+      --emerald-primary: #1E7B48;
+      --emerald-bg: #EBF6EF;
+      --emerald-border: #CCE7D5;
+      
+      --ruby-primary: #A83B3B;
+      --ruby-bg: #FEF6F5;
+      --ruby-border: #F5D3CF;
+
+      --shadow-sm: 0 2px 8px rgba(43, 37, 31, 0.04);
+      --shadow-md: 0 4px 16px rgba(43, 37, 31, 0.06);
+      --radius-card: 22px;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #EDE8DE;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--ink-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    .meta-banner {
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .meta-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .meta-desc {
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+
+    /* Device Mockup Shell */
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 890px;
+      background: var(--canvas);
+      border-radius: 44px;
+      box-shadow: 0 24px 60px rgba(28, 25, 23, 0.18), 0 0 0 12px #2A2521;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 48px;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      z-index: 10;
+    }
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .airplane-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #E8E2D5;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--ink-secondary);
+    }
+
+    /* Scrollable App Body */
+    .app-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 18px 24px;
+      scroll-behavior: smooth;
+    }
+    .app-scroll::-webkit-scrollbar { display: none; }
+
+    /* Header */
+    .header {
+      padding: 6px 0 16px;
+    }
+    .kicker-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .kicker-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kicker-tag {
+      background: var(--gold-bg);
+      border: 1px solid var(--gold-border);
+      color: var(--gold-primary);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+    }
+    .sandbox-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #F4EFEB;
+      border: 1px solid #E5DCCE;
+      color: var(--ink-secondary);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+    }
+    .dot-amber {
+      width: 5px;
+      height: 5px;
+      background: #C87820;
+      border-radius: 50%;
+    }
+    .lang-switcher {
+      display: flex;
+      background: #EFE9DF;
+      border-radius: var(--radius-pill);
+      padding: 2px;
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+    }
+    .lang-opt {
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      transition: all 0.2s ease;
+    }
+    .lang-opt.active {
+      background: #FFFFFF;
+      color: var(--ink-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      color: var(--ink-primary);
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--ink-secondary);
+      line-height: 1.45;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .status-dot-green {
+      width: 7px;
+      height: 7px;
+      background: var(--emerald-primary);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(30, 123, 72, 0.15);
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--ink-primary);
+    }
+    .model-badge {
+      background: var(--gold-bg);
+      border: 1px solid var(--gold-border);
+      color: var(--gold-primary);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    /* Chip pills */
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .chip {
+      background: #FAF8F4;
+      border: 1px solid #ECE5D8;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .hint-subtle {
+      font-size: 11px;
+      color: var(--ink-muted);
+      line-height: 1.4;
+    }
+
+    /* Demo Sandbox Pills */
+    .demo-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .demo-btn {
+      border: 1px solid var(--border-subtle);
+      background: #FAF8F4;
+      padding: 7px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .demo-btn:hover { background: #F1ECE2; }
+    .demo-btn.salary {
+      background: var(--emerald-bg);
+      border-color: var(--emerald-border);
+      color: var(--emerald-primary);
+    }
+    .demo-btn.loan {
+      background: var(--ruby-bg);
+      border-color: var(--ruby-border);
+      color: var(--ruby-primary);
+    }
+    .demo-btn.reset {
+      margin-left: auto;
+      border-color: #EBD8D5;
+      color: var(--ruby-primary);
+    }
+
+    /* Proposal Card */
+    .proposal-card {
+      border: 1.5px solid #DFCFC0;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .inflow-desc {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+    }
+    .origin-pill {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .origin-pill.salary { background: var(--emerald-bg); color: var(--emerald-primary); border: 1px solid var(--emerald-border); }
+    .origin-pill.loan { background: var(--ruby-bg); color: var(--ruby-primary); border: 1px solid var(--ruby-border); }
+
+    /* Hero Banner */
+    .hero-banner {
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 12px;
+      border: 1px solid;
+    }
+    .hero-banner.save {
+      background: #F2F8F4;
+      border-color: #D3EADB;
+    }
+    .hero-banner.skip {
+      background: #FAF6EE;
+      border-color: #EEDEC3;
+    }
+    .hero-kicker {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .hero-banner.save .hero-kicker { color: var(--emerald-primary); }
+    .hero-banner.skip .hero-kicker { color: var(--gold-primary); }
+    .hero-amount {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.8px;
+      margin: 4px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-usdt-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #FFFFFF;
+      border: 1px solid var(--emerald-border);
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--emerald-primary);
+    }
+
+    /* Rationale Quote */
+    .rationale-quote {
+      background: #FAF8F4;
+      border-left: 3px solid var(--gold-primary);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .rationale-text {
+      font-size: 13.5px;
+      line-height: 1.4;
+      font-weight: 500;
+      color: var(--ink-primary);
+      margin-bottom: 4px;
+    }
+    .strategy-caption {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Breakdown Accordion */
+    .accordion-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-top: 1px solid #F1ECE2;
+      color: var(--gold-primary);
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+    }
+    .breakdown-drawer {
+      background: #F9F7F3;
+      border: 1px solid #ECE5D8;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Visual Proportion Bar */
+    .stacked-bar-container {
+      margin-bottom: 12px;
+    }
+    .bar-title {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 5px;
+    }
+    .stacked-bar {
+      height: 10px;
+      border-radius: 5px;
+      display: flex;
+      overflow: hidden;
+      background: #EAE3D6;
+    }
+    .seg-bills { width: 36%; background: #E06D53; }
+    .seg-living { width: 24%; background: #E0A253; }
+    .seg-buffer { width: 15%; background: #8E8478; }
+    .seg-safe { width: 25%; background: #1E7B48; }
+
+    .bar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+    }
+    .legend-item { display: flex; align-items: center; gap: 3px; }
+    .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* Ledger */
+    .ledger-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      padding: 2px 0;
+    }
+    .ledger-row.total {
+      border-top: 1px solid #E5DCCE;
+      margin-top: 6px;
+      padding-top: 6px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .val-deduction { color: var(--ruby-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .val-balance { color: var(--ink-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .val-safe { color: var(--emerald-primary); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+    /* Action Buttons */
+    .action-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-approve {
+      flex: 1.5;
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.1s ease;
+    }
+    .btn-approve:active { transform: scale(0.98); }
+    .btn-decline {
+      flex: 1;
+      background: #FAF8F4;
+      border: 1px solid #DFD5C7;
+      color: var(--ink-secondary);
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Approved State Badge */
+    .badge-approved {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: var(--emerald-bg);
+      border: 1px solid var(--emerald-border);
+      color: var(--emerald-primary);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+
+    /* Laptop Signer Card */
+    .command-box {
+      background: #181512;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      position: relative;
+    }
+    .cmd-tag {
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #8E8478;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .cmd-code {
+      font-family: 'JetBrains Mono', monospace;
+      color: #6EE7B7;
+      font-size: 11px;
+    }
+    .copy-btn {
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #FAF8F4;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Tab Bar */
+    .tab-bar {
+      height: 68px;
+      background: #FFFFFF;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 6px;
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--ink-muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .tab-item.active {
+      color: var(--ink-primary);
+    }
+    .tab-item svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+
+<div class="meta-banner">
+  <div class="meta-title">MyMonies Akiba UI Revision</div>
+  <div class="meta-desc">Interactive prototype of the revised Warm Fintech design</div>
+</div>
+
+<div class="phone-container">
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <div class="airplane-badge">✈ Airplane Mode</div>
+      <svg width="18" height="12" viewBox="0 0 24 16" fill="currentColor">
+        <path d="M0 4C0 1.79086 1.79086 0 4 0H18C20.2091 0 22 1.79086 22 4V12C22 14.2091 20.2091 16 18 16H4C1.79086 16 0 14.2091 0 12V4ZM23 6V10H24V6H23Z" fill="#1C1917"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- App Scrollable Container -->
+  <div class="app-scroll">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="kicker-row">
+        <div class="kicker-group">
+          <span class="kicker-tag">Akiba Agent</span>
+          <span class="sandbox-tag"><span class="dot-amber"></span> Demo Mode</span>
+        </div>
+        <div class="lang-switcher" onclick="toggleLanguage()">
+          <span class="lang-opt active" id="btn-en">EN</span>
+          <span class="lang-opt" id="btn-sw">SW</span>
+        </div>
+      </div>
+      <h1 class="title" id="txt-title">Save it before it's spent</h1>
+      <p class="subtitle" id="txt-subtitle">M-Pesa income arrives → on-device AI calculates what is safe to set aside before payday.</p>
+    </div>
+
+    <!-- On-Device AI Status Card -->
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title-group">
+          <div class="status-dot-green"></div>
+          <span class="card-title">On-Device Private AI</span>
+        </div>
+        <span class="model-badge">Qwen3 0.6B</span>
+      </div>
+      <div class="chips-row">
+        <span class="chip">🔒 100% Offline</span>
+        <span class="chip">⚡ Helio G88 CPU</span>
+        <span class="chip">⏱ 6.1s Median</span>
+      </div>
+      <p class="hint-subtle">No cloud API, no credits. M-Pesa messages never leave this Redmi 10.</p>
+    </div>
+
+    <!-- Demo Inbox Sandbox -->
+    <div class="card" style="padding-bottom: 12px;">
+      <div class="card-header-row" style="margin-bottom: 6px;">
+        <span class="card-title" style="font-size: 13px;">Simulate Inbound SMS</span>
+        <span style="font-size: 10.5px; color: var(--ink-muted); font-weight: 700;">Persona: Amani</span>
+      </div>
+      <div class="demo-pills">
+        <button class="demo-btn salary" onclick="loadSalary()">+ Salary SMS (Ksh 58k)</button>
+        <button class="demo-btn loan" onclick="loadLoan()">+ Tala Loan (Ksh 5k)</button>
+        <button class="demo-btn" onclick="resetDemo()">Load 4 Mo</button>
+        <button class="demo-btn reset" onclick="resetDemo()">Reset</button>
+      </div>
+    </div>
+
+    <!-- Proposal Card (Dynamic) -->
+    <div class="card proposal-card" id="proposalCard">
+      <!-- Origin Row -->
+      <div class="meta-row">
+        <span class="inflow-desc" id="txt-origin">Inflow: Ksh 58,000 from Jua Digital Studios</span>
+        <span class="origin-pill salary" id="txt-label-badge">Salary · AI Verified</span>
+      </div>
+
+      <!-- Hero Callout -->
+      <div class="hero-banner save" id="heroBanner">
+        <div class="hero-kicker" id="txt-hero-kicker">SUGGESTED TO SAVE</div>
+        <div class="hero-amount" id="txt-hero-amount">Ksh 14,500</div>
+        <div class="hero-usdt-pill" id="heroUsdt">
+          <span>≈ 112.18 USDt</span>
+          <span style="color: var(--ink-muted); font-size: 9.5px;">(Simulated Rate)</span>
+        </div>
+      </div>
+
+      <!-- Bilingual Rationale -->
+      <div class="rationale-quote">
+        <div class="rationale-text" id="txt-reason">
+          Bills are covered until payday, so half the safe amount can be saved.
+        </div>
+        <div class="strategy-caption" id="txt-strategy">
+          Standard Strategy (50%) · Judgement by local AI
+        </div>
+      </div>
+
+      <!-- Accordion Toggle -->
+      <div class="accordion-btn" onclick="toggleDrawer()">
+        <span id="txt-why">Why this amount?</span>
+        <span id="accordion-arrow">▼</span>
+      </div>
+
+      <!-- Expandable Drawer -->
+      <div class="breakdown-drawer" id="breakdownDrawer" style="display: none;">
+        <!-- Stacked Allocation Bar -->
+        <div class="stacked-bar-container" id="allocationBar">
+          <div class="bar-title">Cashflow Allocation Flow</div>
+          <div class="stacked-bar">
+            <div class="seg-bills" title="Bills 36%"></div>
+            <div class="seg-living" title="Living 24%"></div>
+            <div class="seg-buffer" title="Buffer 15%"></div>
+            <div class="seg-safe" title="Safe 25%"></div>
+          </div>
+          <div class="bar-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#E06D53"></div>Bills (Ksh 21.7k)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#E0A253"></div>Living (Ksh 14k)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#8E8478"></div>Buffer (Ksh 7k)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#1E7B48"></div>Safe (Ksh 29k)</div>
+          </div>
+        </div>
+
+        <!-- Ledger -->
+        <div class="ledger-row">
+          <span>M-Pesa balance after deposit</span>
+          <span class="val-balance">+ Ksh 62,000</span>
+        </div>
+        <div class="ledger-row">
+          <span>Rent, power & internet due</span>
+          <span class="val-deduction">- Ksh 21,700</span>
+        </div>
+        <div class="ledger-row">
+          <span>Living spend to payday (9 days)</span>
+          <span class="val-deduction">- Ksh 14,300</span>
+        </div>
+        <div class="ledger-row">
+          <span>Emergency cash buffer</span>
+          <span class="val-deduction">- Ksh 7,000</span>
+        </div>
+        <div class="ledger-row total">
+          <span>Most you can safely save</span>
+          <span class="val-safe" id="txt-safe-max">Ksh 29,000</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-group" id="actionGroup">
+        <button class="btn-approve" onclick="approveWithFingerprint()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 0-10 10v2a10 10 0 0 0 10 10 10 10 0 0 0 10-10v-2a10 10 0 0 0-10-10z"/><path d="M12 6a6 6 0 0 0-6 6v2"/><path d="M12 10a2 2 0 0 0-2 2v2"/></svg>
+          <span id="txt-approve">Approve with Fingerprint</span>
+        </button>
+        <button class="btn-decline" id="txt-decline">Not now</button>
+      </div>
+
+      <div class="badge-approved" id="approvedBadge">
+        ✓ Approved Offline · Waiting for laptop signer
+      </div>
+    </div>
+
+    <!-- Laptop Signer Dev Card -->
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title-group">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="card-title">Sepolia Testnet Signer</span>
+        </div>
+        <span class="chip" style="font-size: 9.5px;">WDK Stopgap</span>
+      </div>
+      <div style="font-size: 11px; color: var(--ink-secondary); margin-bottom: 6px;">
+        #0 Spending: <code style="font-family: monospace;">0x82a9...d194</code><br>
+        #1 Savings: &nbsp;<code style="font-family: monospace;">0x39f1...7a20</code>
+      </div>
+      <div class="command-box">
+        <button class="copy-btn" onclick="copyCommand()">Copy</button>
+        <div class="cmd-tag">Execute on Laptop</div>
+        <div class="cmd-code" id="cmdText">npm run wallet -- sweep 112.18</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Tabs -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="tab-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>Transactions</span>
+    </div>
+    <div class="tab-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+      <span>Rules</span>
+    </div>
+    <div class="tab-item active">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L15 8L21 9L17 14L18 20L12 17L6 20L7 14L3 9L9 8L12 2Z"/></svg>
+      <span>Akiba</span>
+    </div>
+    <div class="tab-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentLang = 'en';
+  let isLoanMode = false;
+
+  const content = {
+    en: {
+      title: "Save it before it's spent",
+      subtitle: "M-Pesa income arrives → on-device AI calculates what is safe to set aside before payday.",
+      salaryOrigin: "Inflow: Ksh 58,000 from Jua Digital Studios",
+      loanOrigin: "Inflow: Ksh 5,000 from Tala Kenya Limited",
+      salaryLabel: "Salary · AI Verified",
+      loanLabel: "Loan · Borrowed Funds",
+      salaryHeroKicker: "SUGGESTED TO SAVE",
+      loanHeroKicker: "PROTECTION RULE ACTIVATED",
+      salaryHeroAmount: "Ksh 14,500",
+      loanHeroAmount: "Save Ksh 0",
+      salaryReason: "Bills are covered until payday, so half the safe amount can be saved.",
+      loanReason: "This is a loan, so none of it is saved. A loan should never look like a pay rise.",
+      salaryStrategy: "Standard Strategy (50%) · Judgement by local AI",
+      loanStrategy: "Skip Strategy · Code safety rule enforced",
+      why: "Why this amount?",
+      hide: "Hide breakdown",
+      approve: "Approve with Fingerprint",
+      decline: "Not now"
+    },
+    sw: {
+      title: "Weka akiba kabla haijatumika",
+      subtitle: "Mshahara ukiingia M-Pesa → AI hupanga kiasi salama cha kuweka akiba kabla ya siku ya mshahara.",
+      salaryOrigin: "Mapato: Ksh 58,000 kutoka Jua Digital Studios",
+      loanOrigin: "Mapato: Ksh 5,000 kutoka Tala Kenya Limited",
+      salaryLabel: "Mshahara · Imehakikiwa na AI",
+      loanLabel: "Mkopo · Pesa ya Kukopa",
+      salaryHeroKicker: "KIASI KINACHOPENDEKEZWA KUWEKWA AKIBA",
+      loanHeroKicker: "KANUNI YA USALAMA IMEWASHA",
+      salaryHeroAmount: "Ksh 14,500",
+      loanHeroAmount: "Huweki chochote",
+      salaryReason: "Bili zimelipwa hadi siku ya mshahara, kwa hivyo nusu ya kiasi salama kinaweza kuwekwa akiba.",
+      loanReason: "Huu ni mkopo, kwa hivyo hakuna akiba kutoka kwake. Mkopo usiwahi kuonekana kama ongezeko la mshahara.",
+      salaryStrategy: "Mpango wa Kawaida (50%) · Uamuzi wa AI kwenye simu",
+      loanStrategy: "Mpango wa Kuruka · Kanuni thabiti ya msimbo",
+      why: "Kwa nini kiasi hiki?",
+      hide: "Ficha muhtasari",
+      approve: "Idhinisha kwa alama ya kidole",
+      decline: "Sio sasa"
+    }
+  };
+
+  function updateTexts() {
+    const d = content[currentLang];
+    document.getElementById('txt-title').innerText = d.title;
+    document.getElementById('txt-subtitle').innerText = d.subtitle;
+    document.getElementById('txt-approve').innerText = d.approve;
+    document.getElementById('txt-decline').innerText = d.decline;
+    
+    if (isLoanMode) {
+      document.getElementById('txt-origin').innerText = d.loanOrigin;
+      document.getElementById('txt-label-badge').innerText = d.loanLabel;
+      document.getElementById('txt-hero-kicker').innerText = d.loanHeroKicker;
+      document.getElementById('txt-hero-amount').innerText = d.loanHeroAmount;
+      document.getElementById('txt-reason').innerText = d.loanReason;
+      document.getElementById('txt-strategy').innerText = d.loanStrategy;
+    } else {
+      document.getElementById('txt-origin').innerText = d.salaryOrigin;
+      document.getElementById('txt-label-badge').innerText = d.salaryLabel;
+      document.getElementById('txt-hero-kicker').innerText = d.salaryHeroKicker;
+      document.getElementById('txt-hero-amount').innerText = d.salaryHeroAmount;
+      document.getElementById('txt-reason').innerText = d.salaryReason;
+      document.getElementById('txt-strategy').innerText = d.salaryStrategy;
+    }
+    const isExpanded = document.getElementById('breakdownDrawer').style.display !== 'none';
+    document.getElementById('txt-why').innerText = isExpanded ? d.hide : d.why;
+  }
+
+  function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'sw' : 'en';
+    document.getElementById('btn-en').classList.toggle('active', currentLang === 'en');
+    document.getElementById('btn-sw').classList.toggle('active', currentLang === 'sw');
+    updateTexts();
+  }
+
+  function loadSalary() {
+    isLoanMode = false;
+    const banner = document.getElementById('heroBanner');
+    banner.className = 'hero-banner save';
+    document.getElementById('heroUsdt').style.display = 'inline-flex';
+    document.getElementById('allocationBar').style.display = 'block';
+    document.getElementById('actionGroup').style.display = 'flex';
+    document.getElementById('approvedBadge').style.display = 'none';
+    document.getElementById('cmdText').innerText = 'npm run wallet -- sweep 112.18';
+    
+    const badge = document.getElementById('txt-label-badge');
+    badge.className = 'origin-pill salary';
+    updateTexts();
+  }
+
+  function loadLoan() {
+    isLoanMode = true;
+    const banner = document.getElementById('heroBanner');
+    banner.className = 'hero-banner skip';
+    document.getElementById('heroUsdt').style.display = 'none';
+    document.getElementById('allocationBar').style.display = 'none';
+    document.getElementById('actionGroup').style.display = 'none';
+    document.getElementById('approvedBadge').style.display = 'none';
+    document.getElementById('cmdText').innerText = 'No transaction: borrowed money is protected';
+
+    const badge = document.getElementById('txt-label-badge');
+    badge.className = 'origin-pill loan';
+    updateTexts();
+  }
+
+  function resetDemo() {
+    loadSalary();
+    const drawer = document.getElementById('breakdownDrawer');
+    drawer.style.display = 'none';
+    document.getElementById('accordion-arrow').innerText = '▼';
+    updateTexts();
+  }
+
+  function toggleDrawer() {
+    const drawer = document.getElementById('breakdownDrawer');
+    const isHidden = drawer.style.display === 'none';
+    drawer.style.display = isHidden ? 'block' : 'none';
+    document.getElementById('accordion-arrow').innerText = isHidden ? '▲' : '▼';
+    updateTexts();
+  }
+
+  function approveWithFingerprint() {
+    document.getElementById('actionGroup').style.display = 'none';
+    const badge = document.getElementById('approvedBadge');
+    badge.style.display = 'flex';
+  }
+
+  function copyCommand() {
+    const text = document.getElementById('cmdText').innerText;
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard: ' + text);
+  }
+</script>
+
+</body>
+</html>

@@ -12,7 +12,10 @@ import {
 import { getCategoryBreakdown } from './analytics';
 import SyncHealthCard from './SyncHealthCard';
 import ContributeCard from './ContributeCard';
+import LabelsBackupCard from './LabelsBackupCard';
 import { useSmsPermission } from './hooks/useSmsPermission';
+import { DEMO_MODE } from './demo/mode';
+import { useI18n, type Lang } from './i18n';
 
 const PAYDAY_KEY = 'payday_day';
 
@@ -34,6 +37,7 @@ export default function ProfileScreen() {
   const [kind, setKind] = useState<'FIXED' | 'LOAN'>('FIXED');
   const [saving, setSaving] = useState(false);
   const smsPermission = useSmsPermission();
+  const { lang, setLang, t } = useI18n();
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -111,20 +115,23 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <SyncHealthCard />
+        {/* Demo builds never read the inbox, so there's nothing to sync or grant. */}
+        {!DEMO_MODE && <SyncHealthCard />}
 
-        <Pressable
-          style={styles.linkButton}
-          onPress={() => {
-            IntentLauncher.startActivityAsync(
-              IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
-            ).catch(() => {});
-          }}
-        >
-          <Text style={styles.linkButtonText}>Grant notification access</Text>
-        </Pressable>
+        {!DEMO_MODE && (
+          <Pressable
+            style={styles.linkButton}
+            onPress={() => {
+              IntentLauncher.startActivityAsync(
+                IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
+              ).catch(() => {});
+            }}
+          >
+            <Text style={styles.linkButtonText}>Grant notification access</Text>
+          </Pressable>
+        )}
 
-        {smsPermission.status !== 'granted' && smsPermission.status !== 'unsupported' && (
+        {!DEMO_MODE && smsPermission.status !== 'granted' && smsPermission.status !== 'unsupported' && (
           <Pressable style={styles.linkButton} onPress={() => smsPermission.request()}>
             <Text style={styles.linkButtonText}>
               {smsPermission.status === 'blocked'
@@ -133,6 +140,22 @@ export default function ProfileScreen() {
             </Text>
           </Pressable>
         )}
+
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>{t('lang.title')}</Text>
+          <Text style={styles.cardHint}>{t('lang.hint')}</Text>
+          <View style={styles.suggestionRow}>
+            {(['en', 'sw'] as Lang[]).map((l) => (
+              <Pressable
+                key={l}
+                style={[styles.suggestionPill, lang === l && styles.langActive]}
+                onPress={() => setLang(l)}
+              >
+                <Text style={[styles.suggestionText, lang === l && styles.langActiveText]}>{t(`lang.${l}`)}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
 
         <View style={styles.card}>
           <Text style={styles.cardLabel}>Payday</Text>
@@ -235,6 +258,7 @@ export default function ProfileScreen() {
           );
         })}
 
+        <LabelsBackupCard />
         <ContributeCard />
 
         <View style={styles.futureNote}>
@@ -249,6 +273,13 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  langActive: {
+    backgroundColor: '#1E1B18',
+    borderColor: '#1E1B18',
+  },
+  langActiveText: {
+    color: '#FFFDF9',
+  },
   screen: {
     flex: 1,
     backgroundColor: '#F4F1EA',

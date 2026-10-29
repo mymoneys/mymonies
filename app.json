@@ -23,7 +23,21 @@
     "plugins": [
       "expo-sqlite",
       "expo-font",
-      "expo-mail-composer"
+      "expo-mail-composer",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 29
+          }
+        }
+      ],
+      [
+        "@qvac/sdk/expo-plugin",
+        {
+          "installMissingPrebuilds": true
+        }
+      ]
     ],
     "icon": "./assets/logo.png"
   }

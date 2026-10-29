@@ -2,6 +2,9 @@
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.READ_SMS"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
+  <!-- Fingerprint approval before every Akiba sweep (expo-local-authentication). -->
+  <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+  <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
   <!-- Unused, and they make an SMS-reading app look like banking malware to Play
        Protect; remove them even if a library tries to merge them back in. -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
@@ -36,5 +39,7 @@
         <data android:scheme="mymonies"/>
       </intent-filter>
     </activity>
+    <!-- Optional GPU path for QVAC on Adreno; ignored where the library is absent. -->
+    <uses-native-library android:name="libOpenCL.so" android:required="false"/>
   </application>
 </manifest>

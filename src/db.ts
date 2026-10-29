@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import { parseMpesaMessage, ParsedTransaction } from './parser';
 import { applyRules, createRuleFromTransaction } from './rules';
+import { DEMO_MODE } from './demo/mode';
 
 export type TransactionRow = {
   id: string;
@@ -31,8 +32,9 @@ export type SyncRunRow = {
 };
 
 // Must stay in sync with android/app/src/main/java/com/mymonies/app/TransactionDb.kt
-// (same file name, same schema, same id-hashing algorithm).
-const DB_NAME = 'mpesa.db';
+// (same file name, same schema, same id-hashing algorithm). Demo builds use a
+// separate file the Kotlin listener never writes to — see src/demo/mode.ts.
+const DB_NAME = DEMO_MODE ? 'mpesa-demo.db' : 'mpesa.db';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 

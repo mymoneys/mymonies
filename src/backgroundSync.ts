@@ -3,6 +3,9 @@ import { backfillFromSmsInbox } from './backfill';
 import { runContributionMaintenance } from './contributions';
 import { parsePendingTransactions, reapplyRulesToUncategorized } from './db';
 import { useSmsPermission } from './hooks/useSmsPermission';
+import { DEMO_MODE } from './demo/mode';
+import { applyLabelOverrides } from './labelsBackup';
+import { noteMaintenanceError, runAkibaMaintenance } from './akiba/runner';
 
 const SYNC_INTERVAL_MS = 60000;
 const MAINTENANCE_INTERVAL_MS = 5000;
@@ -29,7 +32,7 @@ export function useBackgroundMaintenance() {
 
   useEffect(() => {
     async function requestOnFirstRun() {
-      if (smsPermission.status === 'unknown') {
+      if (!DEMO_MODE && smsPermission.status === 'unknown') {
         await smsPermission.request();
       }
     }
@@ -40,13 +43,25 @@ export function useBackgroundMaintenance() {
 
   useEffect(() => {
     async function maintain() {
-      try {
-        await parsePendingTransactions();
-        await reapplyRulesToUncategorized();
+      // Each step on its own: one failing step (e.g. contributions) must not
+      // stop the Akiba agent, which runs last.
+      const steps: [string, () => Promise<unknown>][] = [
+        ['parse', parsePendingTransactions],
+        ['rules', reapplyRulesToUncategorized],
+        // Restored labels for messages that have only just been imported.
+        ['labels', applyLabelOverrides],
         // After parsing, so it only picks up messages the parser truly couldn't handle.
-        await runContributionMaintenance();
-      } catch {
-        // Best-effort background upkeep — no user-facing alert for this.
+        ['contributions', runContributionMaintenance],
+        // Last: needs parsed RECEIVED rows. Self-throttled, see src/akiba/runner.ts.
+        ['akiba', runAkibaMaintenance],
+      ];
+      for (const [name, step] of steps) {
+        try {
+          await step();
+        } catch (e) {
+          // Best-effort upkeep: no alert, but the Akiba tab shows the error.
+          noteMaintenanceError(name, e);
+        }
       }
     }
 
@@ -56,7 +71,7 @@ export function useBackgroundMaintenance() {
   }, []);
 
   useEffect(() => {
-    if (smsPermission.status !== 'granted') {
+    if (DEMO_MODE || smsPermission.status !== 'granted') {
       return;
     }
 
