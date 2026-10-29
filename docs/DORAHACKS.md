@@ -25,15 +25,16 @@ Most Kenyans are paid through M-Pesa, and "pay yourself first" rarely happens. B
 - Dashboard, budgets, Needs/Wants/Savings split and CSV export from the existing MyMonies app
 
 ## Offline vs. online
-| Feature | Needs internet? |
-|---|---|
-| SMS capture, parsing, dashboards | No |
-| AI income classification and savings proposal | **No (QVAC on the device)** |
-| KES → USDt conversion preview | No (cached rate) |
-| Fingerprint approval and queuing | No |
-| One-time model download | Yes |
-| Exchange-rate refresh | Optional |
-| Wallet balances and sending the sweep (Sepolia RPC, Candide bundler/paymaster) | Yes |
+**Works offline:**
+- SMS capture, parsing and dashboards
+- AI income classification and savings proposal (QVAC on the device)
+- KES → USDt conversion preview (cached rate)
+- Fingerprint approval and queuing
+
+**Needs the internet:**
+- One-time model download
+- Exchange-rate refresh (optional)
+- Wallet balances and sending the sweep (Sepolia RPC, Candide bundler/paymaster)
 
 ## Tech stack
 - **Offline AI:** QVAC SDK 0.22.0 running **Qwen3 0.6B (Q4)** on the CPU, with grammar-constrained JSON-schema output
