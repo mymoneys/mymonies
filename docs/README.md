@@ -15,7 +15,9 @@ As of 2026-10-22 · Branch `ai-yako-hackathon` · Track: **Agentic finance with 
 
 ## Build log and findings (updated 2026-10-23)
 
-**Timing disclosure:** Akiba feature work started on 22 Oct 2026, before the 24 Oct kickoff. The pre-event baseline is tag `pre-ai-yako` (`8cb90f3`). Everything after it is listed in section 4.
+**Timing disclosure:** Akiba feature work started on 22 Oct 2026, before the 24 Oct kickoff. The pre-event baseline is tag `pre-ai-yako` (`c6202e7`). Everything after it is listed in section 4.
+
+**History disclosure:** On 2 Nov 2026 the Git history was rewritten to remove personal data committed by mistake: a budget file and a private phone number. Commit hashes changed, including the ones cited here, and any older links to commits no longer match this history. Commit dates, authors and messages were kept, and the only other change to the files is the phone number replaced with a placeholder.
 
 | What | Status | Notes |
 | --- | --- | --- |
@@ -120,7 +122,7 @@ Judges must be able to see the split at a glance. The repo makes it unambiguous 
 3. **The README's "Built during AI Yako" section** is generated at submission with `git diff --stat pre-ai-yako..HEAD`.
 4. **Third-party work** is credited by name: QVAC SDK, WDK, Qwen3 model, Candide paymaster/bundler, Pimlico/Candide faucets.
 
-### Pre-existing (before 24 Oct 2026, commits `b72741d`…`94a9712`)
+### Pre-existing (before 24 Oct 2026, commits `435f99b`…`6b8db3b`)
 
 | Capability | Files |
 | --- | --- |
