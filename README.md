@@ -169,3 +169,9 @@ android/app/src/main/java/com/mymonies/app/
 - Cash withdrawals are not counted as spending.
 - Not yet on the Google Play Store. Publishing there requires Google's
   approval to use the SMS permission.
+
+## Licence
+
+The app is licensed under the [GNU AGPL v3.0 or later](LICENSE). The M-Pesa
+parser and redaction code is under Apache-2.0, and the documentation is under
+CC BY 4.0. See [LICENSING.md](LICENSING.md) for which files each licence covers.

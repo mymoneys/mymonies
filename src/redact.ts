@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2026 Fred Gitonga
+
 /**
  * Strips identifying details from a financial SMS before it's shared with us
  * as a parser sample, while keeping the message's *shape* intact — keywords,
