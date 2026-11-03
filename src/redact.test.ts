@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2026 Fred Gitonga
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { messageSignature, redactMessage } from './redact.ts';
